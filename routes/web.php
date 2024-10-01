@@ -1,26 +1,35 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\ItemController;
+use App\Http\Controllers\NotificacionController;
+use App\Http\Controllers\AsistenteController;
+use App\Http\Controllers\SalonController;
+use App\Http\Controllers\ArmarioController;
+use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\UnidadDidacticaController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Rutas para las reservas
+Route::resource('reservas', ReservaController::class);
 
-Route::get('/verificar-conexion', function () {
-    try {
-        // Intentar obtener la conexión PDO y el nombre de la base de datos
-        DB::connection()->getPdo();
-        return 'Conexión exitosa a la base de datos: ' . DB::connection()->getDatabaseName();
-    } catch (\Exception $e) {
-        return 'No se pudo conectar a la base de datos. Error: ' . $e->getMessage();
-    }
-});
+// Rutas para los ítems
+Route::resource('items', ItemController::class);
 
+// Rutas para las notificaciones
+Route::get('/notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
+Route::post('/notificaciones/{id}/read', [NotificacionController::class, 'markAsRead'])->name('notificaciones.read');
 
-// Rutas para gestionar reservas
-Route::get('/reservas', [ReservaController::class, 'index']); // Listar todas las reservas
-Route::get('/reservas/{id}', [ReservaController::class, 'show']); // Ver detalles de una reserva específica
-Route::post('/reservas', [ReservaController::class, 'store']); // Crear una nueva reserva
-Route::put('/reservas/{id}', [ReservaController::class, 'update']); // Actualizar una reserva
-Route::delete('/reservas/{id}', [ReservaController::class, 'destroy']); // Eliminar una reserva
+// Rutas para los asistentes
+Route::resource('asistentes', AsistenteController::class);
+
+// Rutas para los salones
+Route::resource('salones', SalonController::class);
+
+// Rutas para los armarios
+Route::resource('armarios', ArmarioController::class);
+
+// Rutas para las categorías
+Route::resource('categorias', CategoriaController::class);
+
+// Rutas para las unidades didácticas
+Route::resource('unidades', UnidadDidacticaController::class);

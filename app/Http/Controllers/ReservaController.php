@@ -4,35 +4,35 @@ namespace App\Http\Controllers;
 
 use App\Models\Reserva;
 use App\Models\DetalleReservaItem;
+use App\Models\Profesor;
+use App\Models\UnidadDidactica;
+use App\Models\Item;
 use Illuminate\Http\Request;
 
 class ReservaController extends Controller
 {
-    // Listar todas las reservas
+    // Método para listar todas las reservas
     public function index()
     {
-        // Trae todas las reservas con sus detalles
-        $reservas = Reserva::with('detalles.item')->get();
-        return response()->json($reservas); // Devuelve las reservas como JSON
+        $reservas = Reserva::with('detalles.item', 'profesor.usuario', 'unidadDidactica')->get();
+        return view('reservas.index', compact('reservas'));
     }
 
-    // Mostrar los detalles de una reserva específica
-    public function show($id)
+    // Método para mostrar el formulario de creación de una nueva reserva
+    public function create()
     {
-        // Busca la reserva por su ID
-        $reserva = Reserva::with('detalles.item')->find($id);
+        // Cargar los datos necesarios para el formulario
+        $profesores = Profesor::all();  // Obtener todos los profesores
+        $unidades_didacticas = UnidadDidactica::all();  // Obtener todas las unidades didácticas
+        $items = Item::all();  // Obtener todos los ítems disponibles
 
-        if (!$reserva) {
-            return response()->json(['message' => 'Reserva no encontrada'], 404);
-        }
-
-        return response()->json($reserva); // Devuelve los detalles de la reserva
+        // Devolver la vista del formulario y pasar los datos necesarios
+        return view('reservas.create', compact('profesores', 'unidades_didacticas', 'items'));
     }
 
-    // Crear una nueva reserva
+    // Método para guardar la nueva reserva
     public function store(Request $request)
     {
-        // Validar la solicitud
         $request->validate([
             'id_profesor' => 'required|exists:profesor,id_profesor',
             'id_unidad_didactica' => 'required|exists:unidad_didactica,id_unidad_didactica',
@@ -48,10 +48,10 @@ class ReservaController extends Controller
             'id_unidad_didactica' => $request->id_unidad_didactica,
         ]);
 
-        // Guardar los ítems en la tabla detalle_reserva_item
+        // Guardar los ítems en detalle_reserva_item
         foreach ($request->items as $item) {
             DetalleReservaItem::create([
-                'id_reserva' => $reserva->id,
+                'id_reserva' => $reserva->id_reserva,
                 'id_item' => $item['id_item'],
                 'cantidad_reservada' => $item['cantidad_reservada'],
                 'estado' => 'pendiente',
@@ -60,38 +60,8 @@ class ReservaController extends Controller
             ]);
         }
 
-        return response()->json(['message' => 'Reserva creada con éxito', 'reserva' => $reserva], 201);
+        return redirect()->route('reservas.index')->with('success', 'Reserva creada con éxito.');
     }
 
-    // Actualizar el estado de una reserva
-    public function update(Request $request, $id)
-    {
-        // Busca la reserva
-        $reserva = Reserva::find($id);
-
-        if (!$reserva) {
-            return response()->json(['message' => 'Reserva no encontrada'], 404);
-        }
-
-        // Actualiza los detalles de la reserva
-        $reserva->update($request->all());
-
-        return response()->json(['message' => 'Reserva actualizada con éxito']);
-    }
-
-    // Eliminar una reserva
-    public function destroy($id)
-    {
-        // Busca la reserva
-        $reserva = Reserva::find($id);
-
-        if (!$reserva) {
-            return response()->json(['message' => 'Reserva no encontrada'], 404);
-        }
-
-        // Elimina la reserva
-        $reserva->delete();
-
-        return response()->json(['message' => 'Reserva eliminada con éxito']);
-    }
+    // Otros métodos...
 }

@@ -3,33 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Permission\Traits\HasRoles; // Importar el trait
 
 class Usuario extends Model
 {
-    use HasFactory;
+    use HasRoles; // Usar el trait para roles y permisos
 
-    // Definimos la tabla asociada
-    protected $table = 'usuario';
+    protected $table = 'usuarios';
+    protected $fillable = ['nombre_usuario', 'nombre', 'apellidos', 'password'];
 
-    // Definimos los campos que se pueden asignar de forma masiva
-    protected $fillable = [
-        'nombre_usuario', 'nombre', 'apellidos', 'password', 'id_rol'
-    ];
-
-    // Relación: Un usuario pertenece a un rol
-    public function rol()
-    {
-        return $this->belongsTo(Rol::class, 'id_rol', 'id');
-    }
-
-    // Relación: Un usuario puede ser un profesor
+    // Relación con Profesor
     public function profesor()
     {
         return $this->hasOne(Profesor::class, 'id_usuario', 'id');
     }
 
-    // Relación: Un usuario puede ser un asistente
+    // Relación con Asistente
     public function asistente()
     {
         return $this->hasOne(Asistente::class, 'id_usuario', 'id');

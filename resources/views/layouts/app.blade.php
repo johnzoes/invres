@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Reservas</title>
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset(path: 'css/app.css') }}">
 </head>
 <body>
     <header>
@@ -13,7 +13,9 @@
             <a href="{{ route('reservas.index') }}">Reservas</a>
             <a href="{{ route('items.index') }}">Ítems</a>
             <a href="{{ route('asistentes.index') }}">Asistentes</a>
-            <a href="{{ route('notificaciones.index') }}">Notificaciones</a>
+            <a href="{{ route( 'notificaciones.index') }}">Notificaciones</a>
+            <a href="{{ route( 'usuarios.index') }}">Usuarios</a>
+
         </nav>
     </header>
 

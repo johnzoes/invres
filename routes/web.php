@@ -8,6 +8,7 @@ use App\Http\Controllers\SalonController;
 use App\Http\Controllers\ArmarioController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\UnidadDidacticaController;
+use App\Http\Controllers\UsuarioController;
 
 // Rutas para las reservas
 Route::resource('reservas', ReservaController::class);
@@ -33,3 +34,6 @@ Route::resource('categorias', CategoriaController::class);
 
 // Rutas para las unidades didácticas
 Route::resource('unidades', UnidadDidacticaController::class);
+
+Route::resource( 'usuarios', UsuarioController::class);
+

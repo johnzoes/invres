@@ -6,8 +6,11 @@
     <h1>Ítems</h1>
 
     @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+        <div>{{ session('success') }}</div>
     @endif
+
+    <!-- Botón para agregar un nuevo ítem -->
+    <a href="{{ route('items.create') }}">Agregar Ítem</a>
 
     <table>
         <thead>
@@ -23,18 +26,18 @@
         <tbody>
             @foreach($items as $item)
                 <tr>
-                    <td>{{ $item->id_item }}</td>
+                    <td>{{ $item->id }}</td>
                     <td>{{ $item->descripcion }}</td>
                     <td>{{ $item->cantidad }}</td>
                     <td>{{ $item->tipo }}</td>
                     <td>{{ $item->marca }}</td>
                     <td>
-                        <a href="{{ route('items.show', $item->id_item) }}">Ver</a> |
-                        <a href="{{ route('items.destroy', $item->id_item) }}" 
-                           onclick="event.preventDefault(); document.getElementById('delete-form-{{ $item->id_item }}').submit();">
+                        <a href="{{ route('items.show', $item->id) }}">Ver</a> |
+                        <a href="{{ route('items.destroy', $item->id) }}" 
+                           onclick="event.preventDefault(); document.getElementById('delete-form-{{ $item->id }}').submit();">
                             Eliminar
                         </a>
-                        <form id="delete-form-{{ $item->id_item }}" action="{{ route('items.destroy', $item->id_item) }}" method="POST" style="display: none;">
+                        <form id="delete-form-{{ $item->id }}" action="{{ route('items.destroy', $item->id) }}" method="POST" style="display: none;">
                             @csrf
                             @method('DELETE')
                         </form>

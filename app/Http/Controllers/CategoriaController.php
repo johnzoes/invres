@@ -17,7 +17,7 @@ class CategoriaController extends Controller
     // Mostrar el formulario de creación de una nueva categoría
     public function create()
     {
-        return view('categorias.create');
+        return view('categorias.form');
     }
 
     // Guardar una nueva categoría
@@ -36,7 +36,7 @@ class CategoriaController extends Controller
     public function edit($id_categoria)
     {
         $categoria = Categoria::findOrFail($id_categoria);
-        return view('categorias.edit', compact('categoria'));
+        return view('categorias.form', compact('categoria'));
     }
 
     // Actualizar una categoría

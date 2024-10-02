@@ -28,7 +28,7 @@ class ItemController extends Controller
     {
         $categorias = Categoria::all();  // Cargar todas las categorías disponibles
         $armarios = Armario::all();  // Cargar todos los armarios disponibles
-        return view('items.create', compact('categorias', 'armarios'));
+        return view('items.form', compact('categorias', 'armarios'));
     }
 
     // Crear un nuevo ítem
@@ -43,8 +43,8 @@ class ItemController extends Controller
             'modelo' => 'nullable|string',
             'imagen' => 'nullable|string',  // Asumiendo que la imagen se guarda como una URL o nombre de archivo
             'nro_inventariado' => 'nullable|string',
-            'id_categoria' => 'required|exists:categoria,id_categoria',
-            'id_armario' => 'required|exists:armario,id_armario',
+            'id_categoria' => 'required|exists:categorias,id',
+            'id_armario' => 'required|exists:armarios,id',
         ]);
 
         Item::create($data);
@@ -58,7 +58,7 @@ class ItemController extends Controller
         $item = Item::findOrFail($id_item);
         $categorias = Categoria::all();  // Para cargar las categorías disponibles
         $armarios = Armario::all();  // Para cargar los armarios disponibles
-        return view('items.edit', compact('item', 'categorias', 'armarios'));
+        return view('items.form', compact('item', 'categorias', 'armarios'));
     }
 
     // Actualizar un ítem existente

@@ -8,7 +8,7 @@ class Item extends Model
 {
     use HasFactory;
 
-    protected $table = 'item';
+    protected $table = 'items';
     protected $fillable = [
         'codigo_bci', 'descripcion', 'cantidad', 'tipo',
         'marca', 'modelo', 'imagen', 'nro_inventariado',
@@ -17,16 +17,16 @@ class Item extends Model
 
     public function categoria()
     {
-        return $this->belongsTo(Categoria::class, 'id_categoria', 'id_categoria');
+        return $this->belongsTo(Categoria::class, 'id_categoria', 'id');
     }
 
     public function armario()
     {
-        return $this->belongsTo(Armario::class, 'id_armario', 'id_armario');
+        return $this->belongsTo(Armario::class, 'id_armario', 'id');
     }
 
     public function detallesReserva()
     {
-        return $this->hasMany(DetalleReservaItem::class, 'id_item', 'id_item');
+        return $this->hasMany(DetalleReservaItem::class, 'id_item', 'id');
     }
 }

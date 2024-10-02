@@ -9,15 +9,12 @@ class UnidadDidactica extends Model
 {
     use HasFactory;
 
-    // Definimos la tabla asociada
-    protected $table = 'unidad_didactica';
+    protected $table = 'unidades_didacticas';  // Nombre de la tabla en plural
 
-    // Definimos los campos que se pueden asignar de forma masiva
     protected $fillable = ['nombre', 'ciclo'];
 
-    // Relación: Una unidad didáctica tiene muchas reservas
     public function reservas()
     {
-        return $this->hasMany(Reserva::class, 'id_unidad_didactica', 'id_unidad_didactica');
+        return $this->hasMany(Reserva::class, 'id_unidad_didactica', 'id');
     }
 }

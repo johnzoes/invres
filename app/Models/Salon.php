@@ -10,7 +10,9 @@ class Salon extends Model
     use HasFactory;
 
     // Definimos la tabla asociada
-    protected $table = 'salon';
+    protected $table = 'salones';
+    public $timestamps = true;
+
 
     // Definimos los campos que se pueden asignar de forma masiva
     protected $fillable = ['nombre_salon'];
@@ -20,12 +22,12 @@ class Salon extends Model
     // Relación: Un salón tiene muchos armarios
     public function armarios()
     {
-        return $this->hasMany(Armario::class, 'id_salon', 'id_salon');
+        return $this->hasMany(Armario::class, 'id_salon', 'id');
     }
 
     // Relación: Un salón tiene muchos asistentes
     public function asistentes()
     {
-        return $this->hasMany(Asistente::class, 'id_salon', 'id_salon');
+        return $this->hasMany(Asistente::class, 'id_salon', 'id');
     }
 }

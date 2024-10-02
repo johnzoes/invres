@@ -9,27 +9,22 @@ class Asistente extends Model
 {
     use HasFactory;
 
-    // Definimos la tabla asociada
-    protected $table = 'asistente';
+    protected $table = 'asistentes';  // Nombre de la tabla en plural
 
-    // Definimos los campos que se pueden asignar de forma masiva
     protected $fillable = ['id_usuario', 'id_salon', 'turno'];
 
-    // Relación: Un asistente pertenece a un usuario
     public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'id_usuario', 'id_usuario');
+        return $this->belongsTo(Usuario::class, 'id_usuario', 'id');
     }
 
-    // Relación: Un asistente pertenece a un salón
     public function salon()
     {
-        return $this->belongsTo(Salon::class, 'id_salon', 'id_salon');
+        return $this->belongsTo(Salon::class, 'id_salon', 'id');
     }
 
-    // Relación: Un asistente tiene muchas notificaciones
     public function notificaciones()
     {
-        return $this->hasMany(Notificacion::class, 'id_asistente', 'id_asistente');
+        return $this->hasMany(Notificacion::class, 'id_asistente', 'id');
     }
 }

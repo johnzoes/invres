@@ -21,11 +21,11 @@
         <tbody>
             @foreach($salones as $salon)
                 <tr>
-                    <td>{{ $salon->id_salon }}</td>
+                    <td>{{ $salon->id }}</td>
                     <td>{{ $salon->nombre_salon }}</td>
                     <td>
-                        <a href="{{ route('salones.edit', $salon->id_salon) }}" class="btn btn-info btn-sm">Editar</a>
-                        <form action="{{ route('salones.destroy', $salon->id_salon) }}" method="POST" style="display:inline;">
+                        <a href="{{ route('salones.edit', $salon->id) }}" class="btn btn-info btn-sm">Editar</a>
+                        <form action="{{ route('salones.destroy', $salon->id) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>

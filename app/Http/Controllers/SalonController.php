@@ -17,7 +17,7 @@ class SalonController extends Controller
     // Mostrar el formulario de creación de un nuevo salón
     public function create()
     {
-        return view('salones.create');
+        return view('salones.form');
     }
 
     // Guardar un nuevo salón
@@ -36,7 +36,7 @@ class SalonController extends Controller
     public function edit($id_salon)
     {
         $salon = Salon::findOrFail($id_salon);
-        return view('salones.edit', compact('salon'));
+        return view('salones.form', compact('salon'));
     }
 
     // Actualizar un salón

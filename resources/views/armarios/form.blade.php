@@ -3,7 +3,7 @@
 @section('content')
     <h1>{{ isset($armario) ? 'Editar Armario' : 'Crear Nuevo Armario' }}</h1>
 
-    <form action="{{ isset($armario) ? route('armarios.update', $armario->id_armario) : route('armarios.store') }}" method="POST">
+    <form action="{{ isset($armario) ? route('armarios.update', $armario->id) : route('armarios.store') }}" method="POST">
         @csrf
         @if(isset($armario))
             @method('PUT')
@@ -18,7 +18,7 @@
             <label for="id_salon">Salón:</label>
             <select name="id_salon" id="id_salon" class="form-control" required>
                 @foreach($salones as $salon)
-                    <option value="{{ $salon->id_salon }}" {{ isset($armario) && $armario->id_salon == $salon->id_salon ? 'selected' : '' }}>
+                    <option value="{{ $salon->id }}" {{ isset($armario) && $armario->id == $salon->id ? 'selected' : '' }}>
                         {{ $salon->nombre_salon }}
                     </option>
                 @endforeach

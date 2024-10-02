@@ -9,16 +9,12 @@ class Categoria extends Model
 {
     use HasFactory;
 
-    // Definimos la tabla asociada
-    protected $table = 'categoria';
+    protected $table = 'categorias';  // Nombre de la tabla en plural
 
-    // Definimos los campos que se pueden asignar de forma masiva
     protected $fillable = ['nombre_categoria'];
-    public $timestamps = false;
 
-    // Relación: Una categoría tiene muchos ítems
     public function items()
     {
-        return $this->hasMany(Item::class, 'id_categoria', 'id_categoria');
+        return $this->hasMany(Item::class, 'id_categoria', 'id');
     }
 }

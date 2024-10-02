@@ -25,11 +25,11 @@
                     <td>{{ $armario->nombre_armario }}</td>
                     <td>{{ $armario->salon->nombre_salon }}</td>
                     <td>
-                        <a href="{{ route('armarios.edit', $armario->id_armario) }}" class="btn btn-info btn-sm">Editar</a>
-                        <form action="{{ route('armarios.destroy', $armario->id_armario) }}" method="POST" style="display:inline;">
+                        <a href="{{ route('armarios.edit', $armario->id) }}" class="btn btn-info btn-sm">Editar</a>
+                        <form action="{{ route('armarios.destroy', $armario->id) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                            <button type="submit" class="">Eliminar</button>
                         </form>
                     </td>
                 </tr>

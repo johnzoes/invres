@@ -21,12 +21,12 @@ class DetalleReservaItem extends Model
     // Relación: Un detalle de reserva pertenece a una reserva
     public function reserva()
     {
-        return $this->belongsTo(Reserva::class, 'id_reserva', 'id_reserva');
+        return $this->belongsTo(Reserva::class, 'id_reserva', 'id');
     }
 
     // Relación: Un detalle de reserva pertenece a un ítem
     public function item()
     {
-        return $this->belongsTo(Item::class, 'id_item', 'id_item');
+        return $this->belongsTo(Item::class, 'id_item', 'id');
     }
 }

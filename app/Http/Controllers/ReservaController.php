@@ -14,30 +14,32 @@ class ReservaController extends Controller
     // Método para listar todas las reservas
     public function index()
     {
+        // Trae todas las reservas con sus detalles
         $reservas = Reserva::with('detalles.item', 'profesor.usuario', 'unidadDidactica')->get();
         return view('reservas.index', compact('reservas'));
     }
 
-    // Método para mostrar el formulario de creación de una nueva reserva
+    // Mostrar el formulario para crear una nueva reserva
     public function create()
     {
-        // Cargar los datos necesarios para el formulario
-        $profesores = Profesor::all();  // Obtener todos los profesores
-        $unidades_didacticas = UnidadDidactica::all();  // Obtener todas las unidades didácticas
-        $items = Item::all();  // Obtener todos los ítems disponibles
+        // Traer los profesores, unidades didácticas e ítems para mostrarlos en el formulario
+        $profesores = Profesor::with('usuario')->get();
+        $unidades_didacticas = UnidadDidactica::all();
+        $items = Item::all();
 
-        // Devolver la vista del formulario y pasar los datos necesarios
+        // Retornar la vista con los datos necesarios para la creación de la reserva
         return view('reservas.create', compact('profesores', 'unidades_didacticas', 'items'));
     }
 
-    // Método para guardar la nueva reserva
+    // Guardar una nueva reserva
     public function store(Request $request)
     {
+        // Validar la solicitud
         $request->validate([
-            'id_profesor' => 'required|exists:profesor,id_profesor',
-            'id_unidad_didactica' => 'required|exists:unidad_didactica,id_unidad_didactica',
+            'id_profesor' => 'required|exists:profesores,id',
+            'id_unidad_didactica' => 'required|exists:unidades_didacticas,id',
             'items' => 'required|array',
-            'items.*.id_item' => 'required|exists:item,id_item',
+            'items.*.id_item' => 'required|exists:items,id',
             'items.*.cantidad_reservada' => 'required|integer|min:1',
         ]);
 
@@ -48,10 +50,10 @@ class ReservaController extends Controller
             'id_unidad_didactica' => $request->id_unidad_didactica,
         ]);
 
-        // Guardar los ítems en detalle_reserva_item
+        // Guardar los ítems en la tabla detalle_reserva_item
         foreach ($request->items as $item) {
             DetalleReservaItem::create([
-                'id_reserva' => $reserva->id_reserva,
+                'id_reserva' => $reserva->id,
                 'id_item' => $item['id_item'],
                 'cantidad_reservada' => $item['cantidad_reservada'],
                 'estado' => 'pendiente',
@@ -63,5 +65,32 @@ class ReservaController extends Controller
         return redirect()->route('reservas.index')->with('success', 'Reserva creada con éxito.');
     }
 
-    // Otros métodos...
+    // Mostrar los detalles de una reserva específica
+    public function show($id)
+    {
+        // Busca la reserva por su ID
+        $reserva = Reserva::with('detalles.item', 'profesor.usuario', 'unidadDidactica')->find($id);
+
+        if (!$reserva) {
+            return redirect()->route('reservas.index')->with('error', 'Reserva no encontrada.');
+        }
+
+        return view('reservas.show', compact('reserva'));
+    }
+
+    // Eliminar una reserva
+    public function destroy($id)
+    {
+        // Busca la reserva
+        $reserva = Reserva::find($id);
+
+        if (!$reserva) {
+            return redirect()->route('reservas.index')->with('error', 'Reserva no encontrada.');
+        }
+
+        // Elimina la reserva
+        $reserva->delete();
+
+        return redirect()->route('reservas.index')->with('success', 'Reserva eliminada con éxito.');
+    }
 }

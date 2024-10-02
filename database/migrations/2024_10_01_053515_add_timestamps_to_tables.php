@@ -8,116 +8,80 @@ class AddTimestampsToTables extends Migration
 {
     public function up()
     {
-        // Verificar si no existen las columnas y agregarlas
-        if (!Schema::hasColumn('salon', 'created_at')) {
-            Schema::table('salon', function (Blueprint $table) {
+        // Tablas que necesitan timestamps
+        Schema::table('salones', function (Blueprint $table) {
+            if (!Schema::hasColumn('salones', 'created_at')) {
                 $table->timestamps();  // Agrega created_at y updated_at si no existen
-            });
-        }
+            }
+        });
 
-        if (!Schema::hasColumn('armario', 'created_at')) {
-            Schema::table('armario', function (Blueprint $table) {
+        Schema::table('armarios', function (Blueprint $table) {
+            if (!Schema::hasColumn('armarios', 'created_at')) {
                 $table->timestamps();  // Agrega created_at y updated_at si no existen
-            });
-        }
+            }
+        });
 
-        if (!Schema::hasColumn('item', 'created_at')) {
-            Schema::table('item', function (Blueprint $table) {
+        Schema::table('items', function (Blueprint $table) {
+            if (!Schema::hasColumn('items', 'created_at')) {
                 $table->timestamps();  // Agrega created_at y updated_at si no existen
-            });
-        }
+            }
+        });
 
-        if (!Schema::hasColumn('categoria', 'created_at')) {
-            Schema::table('categoria', function (Blueprint $table) {
+        Schema::table('categorias', function (Blueprint $table) {
+            if (!Schema::hasColumn('categorias', 'created_at')) {
                 $table->timestamps();  // Agrega created_at y updated_at si no existen
-            });
-        }
+            }
+        });
 
-        if (!Schema::hasColumn('profesor', 'created_at')) {
-            Schema::table('profesor', function (Blueprint $table) {
+        Schema::table('usuarios', function (Blueprint $table) {
+            if (!Schema::hasColumn('usuarios', 'created_at')) {
                 $table->timestamps();  // Agrega created_at y updated_at si no existen
-            });
-        }
+            }
+        });
 
-        if (!Schema::hasColumn('unidad_didactica', 'created_at')) {
-            Schema::table('unidad_didactica', function (Blueprint $table) {
+        Schema::table('reservas', function (Blueprint $table) {
+            if (!Schema::hasColumn('reservas', 'created_at')) {
                 $table->timestamps();  // Agrega created_at y updated_at si no existen
-            });
-        }
+            }
+        });
 
-        if (!Schema::hasColumn('usuario', 'created_at')) {
-            Schema::table('usuario', function (Blueprint $table) {
+        Schema::table('estado_reserva', function (Blueprint $table) {
+            if (!Schema::hasColumn('estado_reserva', 'created_at')) {
                 $table->timestamps();  // Agrega created_at y updated_at si no existen
-            });
-        }
+            }
+        });
 
-        if (!Schema::hasColumn('reserva', 'created_at')) {
-            Schema::table('reserva', function (Blueprint $table) {
+        Schema::table('notificaciones', function (Blueprint $table) {
+            if (!Schema::hasColumn('notificaciones', 'created_at')) {
                 $table->timestamps();  // Agrega created_at y updated_at si no existen
-            });
-        }
-
-        if (!Schema::hasColumn('detalle_reserva_item', 'created_at')) {
-            Schema::table('detalle_reserva_item', function (Blueprint $table) {
-                $table->timestamps();  // Agrega created_at y updated_at si no existen
-            });
-        }
-
-        if (!Schema::hasColumn('estado_reserva', 'created_at')) {
-            Schema::table('estado_reserva', function (Blueprint $table) {
-                $table->timestamps();  // Agrega created_at y updated_at si no existen
-            });
-        }
-
-        if (!Schema::hasColumn('notificacion', 'created_at')) {
-            Schema::table('notificacion', function (Blueprint $table) {
-                $table->timestamps();  // Agrega created_at y updated_at si no existen
-            });
-        }
-
-        if (!Schema::hasColumn('asistente', 'created_at')) {
-            Schema::table('asistente', function (Blueprint $table) {
-                $table->timestamps();  // Agrega created_at y updated_at si no existen
-            });
-        }
+            }
+        });
     }
 
     public function down()
     {
-        // Eliminar las columnas created_at y updated_at si es necesario
-        Schema::table('salon', function (Blueprint $table) {
+        // Eliminar los timestamps de las tablas seleccionadas si es necesario
+        Schema::table('salones', function (Blueprint $table) {
             $table->dropTimestamps();  // Elimina created_at y updated_at
         });
 
-        Schema::table('armario', function (Blueprint $table) {
+        Schema::table('armarios', function (Blueprint $table) {
             $table->dropTimestamps();
         });
 
-        Schema::table('item', function (Blueprint $table) {
+        Schema::table('items', function (Blueprint $table) {
             $table->dropTimestamps();
         });
 
-        Schema::table('categoria', function (Blueprint $table) {
+        Schema::table('categorias', function (Blueprint $table) {
             $table->dropTimestamps();
         });
 
-        Schema::table('profesor', function (Blueprint $table) {
+        Schema::table('usuarios', function (Blueprint $table) {
             $table->dropTimestamps();
         });
 
-        Schema::table('unidad_didactica', function (Blueprint $table) {
-            $table->dropTimestamps();
-        });
-
-        Schema::table('usuario', function (Blueprint $table) {
-            $table->dropTimestamps();
-        });
-
-        Schema::table('reserva', function (Blueprint $table) {
-            $table->dropTimestamps();
-        });
-
-        Schema::table('detalle_reserva_item', function (Blueprint $table) {
+        Schema::table('reservas', function (Blueprint $table) {
             $table->dropTimestamps();
         });
 
@@ -125,11 +89,7 @@ class AddTimestampsToTables extends Migration
             $table->dropTimestamps();
         });
 
-        Schema::table('notificacion', function (Blueprint $table) {
-            $table->dropTimestamps();
-        });
-
-        Schema::table('asistente', function (Blueprint $table) {
+        Schema::table('notificaciones', function (Blueprint $table) {
             $table->dropTimestamps();
         });
     }

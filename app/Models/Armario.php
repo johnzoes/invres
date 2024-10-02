@@ -10,23 +10,22 @@ class Armario extends Model
     use HasFactory;
 
     // Definimos la tabla asociada
-    protected $table = 'armario';
+    protected $table = 'armarios';  // Cambiado a plural
 
-    // Definimos la clave primaria correcta
-    protected $primaryKey = 'id_armario';
-
+  
+    
     // Definimos los campos que se pueden asignar de forma masiva
     protected $fillable = ['nombre_armario', 'id_salon'];
 
     // Relación: Un armario pertenece a un salón
     public function salon()
     {
-        return $this->belongsTo(Salon::class, 'id_salon', 'id_salon');
+        return $this->belongsTo(Salon::class, 'id_salon', 'id');  // Relación usando 'id_salon'
     }
 
     // Relación: Un armario tiene muchos ítems
     public function items()
     {
-        return $this->hasMany(Item::class, 'id_armario', 'id_armario');
+        return $this->hasMany(Item::class, 'id_armario', 'id');  // Relación usando 'id_armario'
     }
 }

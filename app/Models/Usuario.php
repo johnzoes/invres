@@ -20,18 +20,18 @@ class Usuario extends Model
     // Relación: Un usuario pertenece a un rol
     public function rol()
     {
-        return $this->belongsTo(Rol::class, 'id_rol', 'id_rol');
+        return $this->belongsTo(Rol::class, 'id_rol', 'id');
     }
 
     // Relación: Un usuario puede ser un profesor
     public function profesor()
     {
-        return $this->hasOne(Profesor::class, 'id_usuario', 'id_usuario');
+        return $this->hasOne(Profesor::class, 'id_usuario', 'id');
     }
 
     // Relación: Un usuario puede ser un asistente
     public function asistente()
     {
-        return $this->hasOne(Asistente::class, 'id_usuario', 'id_usuario');
+        return $this->hasOne(Asistente::class, 'id_usuario', 'id');
     }
 }

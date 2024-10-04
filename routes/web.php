@@ -1,39 +1,44 @@
 <?php
 
-use App\Http\Controllers\ReservaController;
-use App\Http\Controllers\ItemController;
-use App\Http\Controllers\NotificacionController;
-use App\Http\Controllers\AsistenteController;
-use App\Http\Controllers\SalonController;
-use App\Http\Controllers\ArmarioController;
-use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\UnidadDidacticaController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\ItemController;
+use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
 
-// Rutas para las reservas
-Route::resource('reservas', ReservaController::class);
 
-// Rutas para los ítems
-Route::resource('items', ItemController::class);
+// Ruta inicial
+Route::get('/', function () {
+    return view('login');
+});
 
-// Rutas para las notificaciones
-Route::get('/notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
-Route::post('/notificaciones/{id}/read', [NotificacionController::class, 'markAsRead'])->name('notificaciones.read');
+// Ruta del dashboard protegido por autenticación
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-// Rutas para los asistentes
-Route::resource('asistentes', AsistenteController::class);
+// Rutas protegidas por autenticación
+Route::middleware('auth')->group(function () {
 
-// Rutas para los salones
-Route::resource('salones', SalonController::class);
+    // Rutas relacionadas con la gestión de usuarios
+    Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
+    Route::get('/usuarios/create', [UsuarioController::class, 'create'])->name('usuarios.create');
+    Route::post('/usuarios', [UsuarioController::class, 'store'])->name('usuarios.store');
+    Route::get('/usuarios/{id}/edit', [UsuarioController::class, 'edit'])->name('usuarios.edit');
+    Route::patch('/usuarios/{id}', [UsuarioController::class, 'update'])->name('usuarios.update');
+    Route::delete('/usuarios/{id}', [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
 
-// Rutas para los armarios
-Route::resource('armarios', ArmarioController::class);
+    // Rutas relacionadas con la gestión de ítems
+    Route::resource('items', ItemController::class);
 
-// Rutas para las categorías
-Route::resource('categorias', CategoriaController::class);
+    // Rutas relacionadas con la gestión de reservas
+    Route::resource('reservas', ReservaController::class);
 
-// Rutas para las unidades didácticas
-Route::resource('unidades', UnidadDidacticaController::class);
+    // Rutas del perfil (proporcionadas por Breeze)
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
-Route::resource( 'usuarios', UsuarioController::class);
-
+// Importar las rutas de autenticación generadas por Breeze
+require __DIR__.'/auth.php';

@@ -1,11 +1,11 @@
 <?php
 
 namespace App\Models;
+use Illuminate\Foundation\Auth\User as Authenticatable; 
 
-use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Traits\HasRoles; // Importar el trait
 
-class Usuario extends Model
+class Usuario extends Authenticatable 
 {
     use HasRoles; // Usar el trait para roles y permisos
 
@@ -23,4 +23,9 @@ class Usuario extends Model
     {
         return $this->hasOne(Asistente::class, 'id_usuario', 'id');
     }
+
+        // Campos que deben estar ocultos para arrays (como el hash de contraseñas)
+        protected $hidden = [
+            'password', 'remember_token',
+        ];
 }

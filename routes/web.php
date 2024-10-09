@@ -19,7 +19,8 @@ Route::get('/dashboard', function () {
 
 Route::get('/test', function () {
     return 'Middleware Test Passed';
-});
+})->middleware('test');
+
 
 // Grupo de rutas para usuarios autenticados
 Route::middleware('auth')->group(function () {

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Middleware;
+use Illuminate\Support\Facades\Log;  // Asegúrate de importar esta clase
 
 use Closure;
 
@@ -8,10 +9,10 @@ class TestMiddleware
 {
     public function handle($request, Closure $next)
     {
-        // Puedes agregar este log para ver si el middleware se ejecuta
-        \Log::info('TestMiddleware ejecutado correctamente.');
+        // Agrega un log para verificar si el middleware se está ejecutando
+        Log::info('TestMiddleware ejecutado correctamente.');
 
-        // Deja que la solicitud continúe
+        // Pasar la solicitud a la siguiente etapa
         return $next($request);
     }
 }

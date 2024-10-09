@@ -2,7 +2,6 @@
 
 namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable; 
-
 use Spatie\Permission\Traits\HasRoles; // Importar el trait
 
 class Usuario extends Authenticatable 
@@ -10,8 +9,15 @@ class Usuario extends Authenticatable
     use HasRoles; // Usar el trait para roles y permisos
 
     protected $table = 'usuarios';
-    protected $fillable = ['nombre_usuario', 'nombre', 'apellidos', 'password'];
-
+    
+    protected $fillable = [
+        'nombre_usuario',
+        'nombre',
+        'apellidos',
+        'password',
+        'email',  // Asegúrate de que este campo esté incluido
+    ];
+    
     // Relación con Profesor
     public function profesor()
     {
@@ -24,8 +30,8 @@ class Usuario extends Authenticatable
         return $this->hasOne(Asistente::class, 'id_usuario', 'id');
     }
 
-        // Campos que deben estar ocultos para arrays (como el hash de contraseñas)
-        protected $hidden = [
-            'password', 'remember_token',
-        ];
+    // Campos que deben estar ocultos para arrays (como el hash de contraseñas)
+    protected $hidden = [
+        'password', 'remember_token',
+    ];
 }

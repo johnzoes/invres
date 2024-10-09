@@ -25,6 +25,8 @@ return [
          */
 
         'role' => Spatie\Permission\Models\Role::class,
+        'user' => App\Models\Usuario::class,  // Añade esta línea para usar el modelo Usuario
+
 
     ],
 

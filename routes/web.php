@@ -13,13 +13,9 @@ Route::get('/', function () {
 
 // Ruta del dashboard
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return view('dashboard'); // Asegúrate que el nombre de la vista es correcto
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-
-Route::get('/test', function () {
-    return 'Middleware Test Passed';
-})->middleware('test');
 
 
 // Grupo de rutas para usuarios autenticados

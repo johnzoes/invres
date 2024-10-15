@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Salon;
+use App\Models\Armario;
+
 use Illuminate\Http\Request;
 
 class SalonController extends Controller
@@ -60,4 +62,14 @@ class SalonController extends Controller
 
         return redirect()->route('salones.index')->with('success', 'Salón eliminado con éxito.');
     }
+
+    public function getArmariosBySalon($id)
+{
+    // Obtiene los armarios relacionados con el salón dado
+    $armarios = Armario::where('id_salon', $id)->get();
+
+    // Retorna los armarios en formato JSON
+    return response()->json($armarios);
+}
+
 }

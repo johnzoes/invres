@@ -8,6 +8,10 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+
+            <a href="{{ route('usuarios.create') }}" class="text-yellow-500 p-6">crear</a>
+
+
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h2>Lista de Usuarios</h2>
                     <table class="table-auto w-full text-left">

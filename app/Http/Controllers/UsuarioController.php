@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 use App\Models\Usuario;
 use App\Models\Profesor;
@@ -18,6 +20,13 @@ class UsuarioController extends Controller
     // Mostrar lista de usuarios
     public function index()
     {
+        if (Auth::check()) {
+            Log::info('Roles del usuario: ' . json_encode(Auth::user()->getRoleNames()));
+            Log::info('Permisos del usuario: ' . json_encode(Auth::user()->getAllPermissions()->pluck('name')));
+        } else {
+            Log::info('Usuario no autenticado');
+        }
+
         $usuarios = Usuario::with('roles')->get(); // Cargar los roles de los usuarios
         return view('usuarios.index', compact('usuarios'));
     }
@@ -118,6 +127,18 @@ public function update(Request $request, $id)
     $usuario->syncRoles($data['roles']);
 
     return redirect()->route('usuarios.index')->with('success', 'Usuario actualizado con éxito.');
+}
+
+public function destroy($id)
+{
+    // Busca el usuario por su ID
+    $usuario = Usuario::findOrFail($id);
+
+    // Elimina el usuario
+    $usuario->delete();
+
+    // Redirige a la lista de usuarios con un mensaje de éxito
+    return redirect()->route('usuarios.index')->with('success', 'Usuario eliminado correctamente');
 }
 
 }

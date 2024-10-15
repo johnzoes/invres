@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\Salon;
 use App\Models\Item;
 use App\Models\Categoria;
 use App\Models\Armario;
@@ -26,9 +26,11 @@ class ItemController extends Controller
     // Mostrar el formulario de creación de un nuevo ítem
     public function create()
     {
+        $salones = Salon::all();  // Asegúrate de tener el modelo Salon configurado
+
         $categorias = Categoria::all();  // Cargar todas las categorías disponibles
         $armarios = Armario::all();  // Cargar todos los armarios disponibles
-        return view('items.form', compact('categorias', 'armarios'));
+        return view('items.form', compact('categorias', 'armarios', 'salones'));
     }
 
     // Crear un nuevo ítem

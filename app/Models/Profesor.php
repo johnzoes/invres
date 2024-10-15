@@ -15,6 +15,8 @@ class Profesor extends Model
     // Definimos los campos que se pueden asignar de forma masiva
     protected $fillable = ['id_usuario'];
 
+    public $timestamps = false;
+
     // Relación: Un profesor pertenece a un usuario
     public function usuario()
     {

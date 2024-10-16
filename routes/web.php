@@ -4,7 +4,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\SalonController;
 use App\Http\Controllers\ArmarioController;
 use App\Http\Controllers\UsuarioController;
-use App\Http\Controllers\ReservaController; // Asegúrate de importar el controlador de Reservas
+use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,19 +35,20 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->middleware('permission:ver salones|crear salones|editar salones|eliminar salones');
     Route::resource('armarios', ArmarioController::class)
         ->middleware('permission:ver armarios|crear armarios|editar armarios|eliminar armarios');
-    Route::resource('reservas', ReservaController::class)  // Añadir la ruta para reservas
+    Route::resource('reservas', ReservaController::class)
         ->middleware('permission:ver reservas|crear reservas|editar reservas|eliminar reservas');
 });
 
-Route::middleware(['auth'])->group(function () {
-    Route::middleware(['role:profesor|admin'])->group(function () {
-        Route::resource('reservas', ReservaController::class)->only(['create', 'store']);
-    });
+// Grupo de rutas para profesores (crear y gestionar sus propias reservas)
+Route::middleware(['auth', 'role:profesor'])->group(function () {
+    Route::get('reservas/create', action: [ReservaController::class, 'create'])->name('reservas.create');
+    Route::post('reservas', [ReservaController::class, 'store'])->name('reservas.store');
+    Route::get('reservas', [ReservaController::class, 'index'])->name('reservas.index')
+        ->middleware('permission:ver reservas'); // Solo los profesores pueden ver sus propias reservas
 });
 
-Route::get('/salones/{id}/armarios', [SalonController::class, 'getArmariosBySalon']);
-
-
+// Ruta para obtener armarios por salón (disponible para todos los usuarios autenticados)
+Route::get('/salones/{id}/armarios', [SalonController::class, 'getArmariosBySalon'])->middleware('auth');
 
 // Incluye las rutas de autenticación generadas por Breeze
 require __DIR__.'/auth.php';

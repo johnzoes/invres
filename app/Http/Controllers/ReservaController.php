@@ -14,10 +14,21 @@ class ReservaController extends Controller
     // Método para listar todas las reservas
     public function index()
     {
-        // Trae todas las reservas con sus detalles
-        $reservas = Reserva::with('detalles.item', 'profesor.usuario', 'unidadDidactica')->get();
+        $user = auth()->user();
+    
+        // Si el usuario es un profesor, accedemos a sus reservas a través del modelo Profesor
+        if ($user->hasRole('profesor')) {
+            $profesor = $user->profesor; // Relación definida en el modelo Usuario (Usuario tiene un Profesor)
+            $reservas = $profesor ? $profesor->reservas : []; // Si es profesor, obtiene sus reservas
+        } else {
+            // Si es admin o asistente, mostramos todas las reservas
+            $reservas = Reserva::all();
+        }
+    
         return view('reservas.index', compact('reservas'));
     }
+    
+    
 
     // Mostrar el formulario para crear una nueva reserva
     public function create()
@@ -34,6 +45,9 @@ class ReservaController extends Controller
     // Guardar una nueva reserva
     public function store(Request $request)
     {
+        // Verificar los datos que llegan a la solicitud
+        dd($request->all());
+    
         // Validar la solicitud
         $request->validate([
             'id_profesor' => 'required|exists:profesores,id',
@@ -42,14 +56,14 @@ class ReservaController extends Controller
             'items.*.id_item' => 'required|exists:items,id',
             'items.*.cantidad_reservada' => 'required|integer|min:1',
         ]);
-
+    
         // Crear la reserva
         $reserva = Reserva::create([
             'fecha_prestamo' => now(),
             'id_profesor' => $request->id_profesor,
             'id_unidad_didactica' => $request->id_unidad_didactica,
         ]);
-
+    
         // Guardar los ítems en la tabla detalle_reserva_item
         foreach ($request->items as $item) {
             DetalleReservaItem::create([
@@ -61,9 +75,10 @@ class ReservaController extends Controller
                 'hora_reserva' => now(),
             ]);
         }
-
+    
         return redirect()->route('reservas.index')->with('success', 'Reserva creada con éxito.');
     }
+    
 
     // Mostrar los detalles de una reserva específica
     public function show($id)

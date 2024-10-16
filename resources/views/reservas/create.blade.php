@@ -1,4 +1,3 @@
-<!-- resources/views/reservas/create.blade.php -->
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -15,47 +14,33 @@
                     <form action="{{ route('reservas.store') }}" method="POST">
                         @csrf
 
-                        <!-- Profesor -->
-                        @if(auth()->user()->hasRole('admin'))
-                            <div class="mb-4">
-                                <label for="profesor" class="block text-sm font-medium text-gray-700">Profesor:</label>
-                                <select name="id_profesor" id="profesor" class="form-select mt-1 block w-full">
-                                    @foreach($profesores as $profesor)
-                                        <option value="{{ $profesor->id_profesor }}" {{ old('id_profesor') == $profesor->id_profesor ? 'selected' : '' }}>
-                                            {{ $profesor->usuario->nombre }} {{ $profesor->usuario->apellidos }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        @else
-                            <!-- Si el usuario es profesor, automáticamente selecciona su id -->
-                            <input type="hidden" name="id_profesor" value="{{ auth()->user()->profesor->id_profesor }}">
-                        @endif
+            <!-- Unidad Didáctica -->
+            <div class="mb-4">
+    <label for="unidad_didactica" class="block text-sm font-medium text-gray-700">Unidad Didáctica:</label>
+    <select name="id_unidad_didactica" id="unidad_didactica" class="form-select mt-1 block w-full" required>
+        <option value="">Selecciona una unidad</option> <!-- Opción vacía para forzar selección -->
+        @foreach($unidades_didacticas as $unidad)
+            <option value="{{ $unidad->id_unidad_didactica }}" {{ old('id_unidad_didactica') == $unidad->id_unidad_didactica ? 'selected' : '' }}>
+                {{ $unidad->nombre }}
+            </option>
+        @endforeach
+    </select>
+</div>
 
-                        <!-- Unidad Didáctica -->
-                        <div class="mb-4">
-                            <label for="unidad_didactica" class="block text-sm font-medium text-gray-700">Unidad Didáctica:</label>
-                            <select name="id_unidad_didactica" id="unidad_didactica" class="form-select mt-1 block w-full">
-                                @foreach($unidades_didacticas as $unidad)
-                                    <option value="{{ $unidad->id_unidad_didactica }}" {{ old('id_unidad_didactica') == $unidad->id_unidad_didactica ? 'selected' : '' }}>
-                                        {{ $unidad->nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
 
                         <!-- Ítems -->
-                        <h3 class="mb-4 text-md font-semibold">Seleccionar Ítems</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            @foreach($items as $item)
-                                <div class="flex items-center">
-                                    <input type="checkbox" id="item_{{ $item->id_item }}" name="items[{{ $item->id_item }}][id_item]" value="{{ $item->id_item }}" class="form-checkbox">
-                                    <label for="item_{{ $item->id_item }}" class="ml-2">{{ $item->descripcion }}</label>
+<!-- Ítems -->
+<h3 class="mb-4 text-md font-semibold">Seleccionar Ítems</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    @foreach($items as $item)
+        <div class="flex items-center">
+            <input type="checkbox" id="item_{{ $item->id }}" name="items[{{ $item->id }}][id_item]" value="{{ $item->id }}" class="form-checkbox" onchange="toggleQuantityField({{ $item->id }})">
+            <label for="item_{{ $item->id }}" class="ml-2">{{ $item->descripcion }}</label>
 
-                                    <input type="number" name="items[{{ $item->id_item }}][cantidad_reservada]" min="1" placeholder="Cantidad" class="form-input ml-4 w-24" value="{{ old('items.'.$item->id_item.'.cantidad_reservada') }}">
-                                </div>
-                            @endforeach
-                        </div>
+            <input type="number" name="items[{{ $item->id }}][cantidad_reservada]" min="1" placeholder="Cantidad" class="form-input ml-4 w-24" id="cantidad_{{ $item->id }}" style="display:none;">
+        </div>
+    @endforeach
+</div>
 
                         <!-- Botón para enviar -->
                         <div class="mt-6">
@@ -73,4 +58,19 @@
             </div>
         </div>
     </div>
+
+    <!-- JavaScript para mostrar/ocultar el campo de cantidad -->
+    <script>
+        function toggleQuantityField(itemId) {
+            var checkbox = document.getElementById('item_' + itemId);
+            var cantidadField = document.getElementById('cantidad_' + itemId);
+
+            if (checkbox.checked) {
+                cantidadField.style.display = 'block';  // Muestra el campo de cantidad
+            } else {
+                cantidadField.style.display = 'none';  // Oculta el campo de cantidad si el checkbox no está seleccionado
+                cantidadField.value = '';  // Resetea el valor del campo de cantidad
+            }
+        }
+    </script>
 </x-app-layout>

@@ -30,6 +30,12 @@ class Usuario extends Authenticatable
         return $this->hasOne(Asistente::class, 'id_usuario', 'id');
     }
 
+    // Relación con Reserva (Un Usuario puede tener muchas Reservas)
+    public function reservas()
+    {
+        return $this->hasMany(Reserva::class, 'id_usuario', 'id'); // 'id_usuario' es la clave foránea en la tabla reservas
+    }
+
     // Campos que deben estar ocultos para arrays (como el hash de contraseñas)
     protected $hidden = [
         'password', 'remember_token',

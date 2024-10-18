@@ -11,6 +11,7 @@ class DetalleReservaItem extends Model
 
     // Definimos la tabla asociada
     protected $table = 'detalle_reserva_item';
+    public $timestamps = false;
 
     // Definimos los campos que se pueden asignar de forma masiva
     protected $fillable = [

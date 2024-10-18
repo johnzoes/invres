@@ -45,31 +45,29 @@ class ReservaController extends Controller
     // Guardar una nueva reserva
     public function store(Request $request)
     {
-        // Verificar los datos que llegan a la solicitud
-        dd($request->all());
-    
         // Validar la solicitud
         $request->validate([
-            'id_profesor' => 'required|exists:profesores,id',
             'id_unidad_didactica' => 'required|exists:unidades_didacticas,id',
             'items' => 'required|array',
-            'items.*.id_item' => 'required|exists:items,id',
-            'items.*.cantidad_reservada' => 'required|integer|min:1',
+            'items.*' => 'exists:items,id',
+            'cantidad.*' => 'required|integer|min:1', // Validar las cantidades
         ]);
     
         // Crear la reserva
         $reserva = Reserva::create([
             'fecha_prestamo' => now(),
-            'id_profesor' => $request->id_profesor,
+            'id_profesor' => auth()->user()->profesor->id, // O id_profesor en la solicitud
             'id_unidad_didactica' => $request->id_unidad_didactica,
         ]);
     
-        // Guardar los ítems en la tabla detalle_reserva_item
-        foreach ($request->items as $item) {
+        // Guardar los ítems y cantidades en la tabla detalle_reserva_item
+        foreach ($request->items as $itemId) {
+            $cantidad = $request->input('cantidad.' . $itemId);
+    
             DetalleReservaItem::create([
                 'id_reserva' => $reserva->id,
-                'id_item' => $item['id_item'],
-                'cantidad_reservada' => $item['cantidad_reservada'],
+                'id_item' => $itemId,
+                'cantidad_reservada' => $cantidad,
                 'estado' => 'pendiente',
                 'fecha_reserva' => now(),
                 'hora_reserva' => now(),
@@ -78,6 +76,7 @@ class ReservaController extends Controller
     
         return redirect()->route('reservas.index')->with('success', 'Reserva creada con éxito.');
     }
+    
     
 
     // Mostrar los detalles de una reserva específica

@@ -10,38 +10,38 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
 
-                <a href="{{ route('reservas.create') }}" class="text-yellow-500 p-6">crear</a>
+                    <a href="{{ route('reservas.create') }}" class="bg-yellow-500 text-white p-2 rounded">Crear Reserva</a>
 
-                    <h1>Reservas</h1>
+                    <h1 class="text-lg font-bold mt-4 mb-2">Listado de Reservas</h1>
 
                     @if (session('success'))
-                        <div class="alert alert-success">{{ session('success') }}</div>
+                        <div class="bg-green-500 text-white p-2 mb-4 rounded">{{ session('success') }}</div>
                     @endif
 
-                    <table>
+                    <table class="table-auto w-full text-left">
                         <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Profesor</th>
-                                <th>Unidad Didáctica</th>
-                                <th>Fecha de Préstamo</th>
-                                <th>Acciones</th>
+                            <tr class="bg-gray-700 text-white">
+                                <th class="px-4 py-2">ID</th>
+                                <th class="px-4 py-2">Profesor</th>
+                                <th class="px-4 py-2">Unidad Didáctica</th>
+                                <th class="px-4 py-2">Fecha de Préstamo</th>
+                                <th class="px-4 py-2">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="bg-gray-200">
                             @foreach($reservas as $reserva)
-                                <tr>
-                                    <td>{{ $reserva->id_reserva }}</td>
-                                    <td>{{ $reserva->profesor->usuario->nombre }} {{ $reserva->profesor->usuario->apellidos }}</td>
-                                    <td>{{ $reserva->unidadDidactica->nombre }}</td>
-                                    <td>{{ $reserva->fecha_prestamo }}</td>
-                                    <td>
-                                        <a href="{{ route('reservas.show', $reserva->id_reserva) }}">Ver Detalles</a> |
-                                        <a href="{{ route('reservas.destroy', $reserva->id_reserva) }}"
-                                           onclick="event.preventDefault(); document.getElementById('delete-form-{{ $reserva->id_reserva }}').submit();">
+                                <tr class="border-b">
+                                    <td class="px-4 py-2">{{ $reserva->id }}</td>
+                                    <td class="px-4 py-2">{{ $reserva->profesor->usuario->nombre }} {{ $reserva->profesor->usuario->apellidos }}</td>
+                                    <td class="px-4 py-2">{{ $reserva->unidadDidactica->nombre }}</td>
+                                    <td class="px-4 py-2">{{ $reserva->fecha_prestamo }}</td>
+                                    <td class="px-4 py-2">
+                                        <a href="{{ route('reservas.show', $reserva->id) }}" class="text-blue-500 hover:text-blue-700">Ver Detalles</a> |
+                                        <a href="#" class="text-red-500 hover:text-red-700" 
+                                           onclick="event.preventDefault(); document.getElementById('delete-form-{{ $reserva->id }}').submit();">
                                            Eliminar
                                         </a>
-                                        <form id="delete-form-{{ $reserva->id_reserva }}" action="{{ route('reservas.destroy', $reserva->id_reserva) }}" method="POST" style="display: none;">
+                                        <form id="delete-form-{{ $reserva->id }}" action="{{ route('reservas.destroy', $reserva->id) }}" method="POST" style="display: none;">
                                             @csrf
                                             @method('DELETE')
                                         </form>

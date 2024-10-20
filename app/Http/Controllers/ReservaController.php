@@ -14,12 +14,14 @@ class ReservaController extends Controller
     // Método para listar todas las reservas
     public function index()
     {
+
         $user = auth()->user();
-    
-        // Si el usuario es un profesor, accedemos a sus reservas a través del modelo Profesor
+        
+
+        // Si el usuario es un profesor, accedemos a sus reservas
         if ($user->hasRole('profesor')) {
-            $profesor = $user->profesor; // Relación definida en el modelo Usuario (Usuario tiene un Profesor)
-            $reservas = $profesor ? $profesor->reservas : []; // Si es profesor, obtiene sus reservas
+            $profesor = $user->profesor;
+            $reservas = $profesor ? $profesor->reservas : [];
         } else {
             // Si es admin o asistente, mostramos todas las reservas
             $reservas = Reserva::all();

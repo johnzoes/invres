@@ -1,12 +1,11 @@
 <?php
+
 use App\Http\Middleware\CheckPermission;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\TestMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-
-
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,12 +15,16 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'test' => TestMiddleware::class,
-            'role' => CheckRole::class,
-            'permission' => CheckPermission::class,
+            // Puedes habilitar estos middlewares si los necesitas
+            //'test' => TestMiddleware::class,
+            //'role' => CheckRole::class, 
+            //'permission' => CheckPermission::class,
 
-]);
-
+            // Alias de Spatie
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Manejo de excepciones si es necesario

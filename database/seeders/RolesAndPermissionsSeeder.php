@@ -10,7 +10,7 @@ class RolesAndPermissionsSeeder extends Seeder
 {
     public function run()
     {
-        // Crear permisos
+        // Crear permisos sin duplicar
         $permissions = [
             // Gestión de Usuarios
             'ver usuarios',
@@ -51,30 +51,31 @@ class RolesAndPermissionsSeeder extends Seeder
             'devolver ítems',
         ];
 
-        // Crear los permisos en la base de datos
+        // Crear los permisos en la base de datos si no existen
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
 
-        // Crear roles
-        $admin = Role::create(['name' => 'admin']);
-        $profesor = Role::create(['name' => 'profesor']);
-        $asistente = Role::create(['name' => 'asistente']);
+        // Crear roles sin duplicar
+        $admin = Role::firstOrCreate(['name' => 'admin']);
+        $profesor = Role::firstOrCreate(['name' => 'profesor']);
+        $asistente = Role::firstOrCreate(['name' => 'asistente']);
 
-        // Asignar permisos al rol de Admin
-        $admin->givePermissionTo(Permission::all());
+        // Asignar permisos al rol de Admin (le damos todos los permisos)
+        $admin->syncPermissions(Permission::all());
 
         // Asignar permisos al rol de Profesor
-        $profesor->givePermissionTo([
+        $profesorPermissions = [
             'crear reservas',
             'ver reservas',
             'editar reservas',
             'eliminar reservas',
             'ver items',
-        ]);
+        ];
+        $profesor->syncPermissions($profesorPermissions);
 
         // Asignar permisos al rol de Asistente
-        $asistente->givePermissionTo([
+        $asistentePermissions = [
             'ver reservas',
             'aprobar reservas',
             'rechazar reservas',
@@ -85,6 +86,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'ver items',
             'ver salones',
             'ver armarios',
-        ]);
+        ];
+        $asistente->syncPermissions($asistentePermissions);
     }
 }

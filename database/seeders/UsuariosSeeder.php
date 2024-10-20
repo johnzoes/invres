@@ -12,40 +12,47 @@ class UsuariosSeeder extends Seeder
 {
     public function run()
     {
-        // Crear un usuario profesor
-        $profesor = Usuario::create([
+        // Crear un usuario profesor si no existe
+        $profesor = Usuario::firstOrCreate([
+            'email' => 'profesor1@example.com',
+        ], [
             'nombre_usuario' => 'profesor1',
             'nombre' => 'Juan',
             'apellidos' => 'Pérez',
-            'email' => 'profesor1@example.com',
             'password' => Hash::make('profesorpassword'),
         ]);
 
-        // Asignar el rol de profesor
-        $profesor->assignRole('profesor');
+        // Asignar el rol de profesor solo si no lo tiene ya
+        if (!$profesor->hasRole('profesor')) {
+            $profesor->assignRole('profesor');
+        }
 
-        // Relacionar el profesor en la tabla profesores
-        Profesor::create([
+        // Relacionar el profesor en la tabla profesores si no existe
+        Profesor::firstOrCreate([
             'id_usuario' => $profesor->id,
         ]);
 
-        // Crear un usuario asistente
-        $asistente = Usuario::create([
+        // Crear un usuario asistente si no existe
+        $asistente = Usuario::firstOrCreate([
+            'email' => 'asistente1@example.com',
+        ], [
             'nombre_usuario' => 'asistente1',
             'nombre' => 'María',
             'apellidos' => 'García',
-            'email' => 'asistente1@example.com',
             'password' => Hash::make('asistentepassword'),
         ]);
 
-        // Asignar el rol de asistente
-        $asistente->assignRole('asistente');
+        // Asignar el rol de asistente solo si no lo tiene ya
+        if (!$asistente->hasRole('asistente')) {
+            $asistente->assignRole('asistente');
+        }
 
-        // Relacionar el asistente en la tabla asistentes
-        Asistente::create([
+        // Relacionar el asistente en la tabla asistentes si no existe
+        Asistente::firstOrCreate([
             'id_usuario' => $asistente->id,
-            'id_salon' => 1, // Debes asegurarte de que el salón existe, o ajustarlo según tu base de datos.
-            'turno' => 'mañana', // Puedes ajustar el valor según los valores válidos en tu base de datos
+        ], [
+            'id_salon' => 1, // Ajusta este valor si es necesario
+            'turno' => 'mañana',
         ]);
     }
 }

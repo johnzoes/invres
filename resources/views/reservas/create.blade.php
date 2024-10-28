@@ -30,10 +30,11 @@
                         <div class="mb-4">
                             <label for="items" class="block text-sm font-medium text-gray-700">Buscar y Seleccionar Ítems:</label>
                             <select id="items" name="items[]" class="form-select mt-1 block w-full select2" multiple="multiple">
-                                @foreach ($items as $item)
-                                    <option value="{{ $item->id }}">{{ $item->descripcion }} (Cantidad: {{ $item->cantidad }})</option>
-                                @endforeach
-                            </select>
+    @foreach ($items as $item)
+        <option value="{{ $item->id }}">{{ $item->descripcion }} (Cantidad: {{ $item->cantidad }})</option>
+    @endforeach
+</select>
+
                         </div>
 
                         <!-- Contenedor para las cantidades dinámicas -->
@@ -78,7 +79,7 @@
                     var cantidadInput = `
                         <div class="mb-4">
                             <label for="cantidad_${itemId}" class="block text-sm font-medium text-gray-700">Cantidad para ${item.descripcion}:</label>
-                            <input type="number" name="cantidad[${itemId}]" id="cantidad_${itemId}" min="1" max="${item.cantidad}" class="form-input mt-1 block w-full" placeholder="Máximo: ${item.cantidad}">
+                            <input type="number" name="cantidad[${itemId}]" id="cantidad_${itemId}" min="1" max="${item.cantidad}" class="form-input mt-1 block w-full" placeholder="Máximo: ${item.cantidad}" required>
                         </div>
                     `;
                     container.append(cantidadInput); // Añadir input al contenedor

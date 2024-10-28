@@ -74,18 +74,36 @@ class RolesAndPermissionsSeeder extends Seeder
         ];
         $profesor->syncPermissions($profesorPermissions);
 
-        // Asignar permisos al rol de Asistente
+        // Asignar permisos al rol de Asistente (CRUD completo para ítems, salones, y armarios)
         $asistentePermissions = [
+            // CRUD completo de ítems
+            'ver items',
+            'crear items',
+            'editar items',
+            'eliminar items',
+
+            // CRUD completo de salones
+            'ver salones',
+            'crear salones',
+            'editar salones',
+            'eliminar salones',
+
+            // CRUD completo de armarios
+            'ver armarios',
+            'crear armarios',
+            'editar armarios',
+            'eliminar armarios',
+
+            // Gestión de Reservas y otras tareas
             'ver reservas',
             'aprobar reservas',
             'rechazar reservas',
             'prestar ítems',
             'devolver ítems',
+            
+            // Notificaciones
             'ver notificaciones',
             'marcar notificaciones como leídas',
-            'ver items',
-            'ver salones',
-            'ver armarios',
         ];
         $asistente->syncPermissions($asistentePermissions);
     }

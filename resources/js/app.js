@@ -1,7 +1,12 @@
-import './bootstrap'; // Esto carga el archivo bootstrap.js, donde puede haber inicialización de bibliotecas o configuración
-
-import Alpine from 'alpinejs'; // Si estás usando Alpine.js para lógica interactiva en frontend
+import './bootstrap';
+import Alpine from 'alpinejs';
+import $ from 'jquery';
+import 'select2';
 
 window.Alpine = Alpine;
-
 Alpine.start();
+
+// Inicializar Select2
+$(document).ready(function() {
+    $('#items').select2();
+});

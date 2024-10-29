@@ -59,32 +59,13 @@
         </div>
     </div>
 
-    <script>
+    @push('scripts')
+<script>
+    $(document).ready(function() {
         // Inicializa Select2
         $('#items').select2();
+    });
+</script>
+@endpush
 
-        // Controla los campos dinámicos para cantidades
-        $('#items').on('change', function() {
-            var selectedItems = $(this).val(); // Obtiene los ítems seleccionados
-            var itemsData = @json($items); // Convertir datos de PHP a JS
-            var container = $('#cantidad-container'); // Contenedor para los campos de cantidad
-            container.empty(); // Limpiar contenedor
-
-            // Por cada ítem seleccionado, crear un input para cantidad
-            selectedItems.forEach(function(itemId) {
-                var item = itemsData.find(i => i.id == itemId); // Buscar el ítem por ID
-
-                if (item) {
-                    // Crear HTML para el input de cantidad
-                    var cantidadInput = `
-                        <div class="mb-4">
-                            <label for="cantidad_${itemId}" class="block text-sm font-medium text-gray-700">Cantidad para ${item.descripcion}:</label>
-                            <input type="number" name="cantidad[${itemId}]" id="cantidad_${itemId}" min="1" max="${item.cantidad}" class="form-input mt-1 block w-full" placeholder="Máximo: ${item.cantidad}" required>
-                        </div>
-                    `;
-                    container.append(cantidadInput); // Añadir input al contenedor
-                }
-            });
-        });
-    </script>
 </x-app-layout>

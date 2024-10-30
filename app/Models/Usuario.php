@@ -3,11 +3,11 @@
 namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable; 
 use Spatie\Permission\Traits\HasRoles; // Importar el trait
+use Illuminate\Notifications\Notifiable;
 
 class Usuario extends Authenticatable 
 {
     use HasRoles; // Usar el trait para roles y permisos
-
     protected $table = 'usuarios';
     
     protected $fillable = [

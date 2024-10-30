@@ -13,4 +13,10 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+
+    resolve: {
+        alias: {
+            '~select2': 'select2/dist/css/select2.min.css',
+        },
+    },
 });

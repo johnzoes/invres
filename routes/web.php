@@ -5,6 +5,8 @@ use App\Http\Controllers\SalonController;
 use App\Http\Controllers\ArmarioController;
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+
 use Illuminate\Support\Facades\Route;
 
 // Rutas que requieren autenticación
@@ -13,12 +15,14 @@ Route::middleware('auth')->group(function () {
     // Ruta de inicio y dashboard
     Route::get('/', function () {
         return view('dashboard');
-    })->name('home');
+    })->name('dashboard');
 
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->middleware('verified')->name('dashboard');
 
+    Route::middleware('auth')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    });
+    
+    
     // Rutas relacionadas con el perfil del usuario autenticado
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('edit');

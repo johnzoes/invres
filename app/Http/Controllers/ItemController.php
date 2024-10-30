@@ -27,7 +27,6 @@ class ItemController extends Controller
     public function create()
     {
         $salones = Salon::all();  // Asegúrate de tener el modelo Salon configurado
-
         $categorias = Categoria::all();  // Cargar todas las categorías disponibles
         $armarios = Armario::all();  // Cargar todos los armarios disponibles
         return view('items.form', compact('categorias', 'armarios', 'salones'));
@@ -93,4 +92,11 @@ class ItemController extends Controller
 
         return redirect()->route('items.index')->with('success', 'Ítem eliminado con éxito.');
     }
+
+    public function getArmariosBySalon($salonId)
+    {
+    $armarios = Armario::where('id_salon', $salonId)->get();
+    return response()->json($armarios);
+    }
+
 }

@@ -118,32 +118,35 @@
 
     <!-- Script para manejar la selección de salones y cargar los armarios dinámicamente -->
     <script>
-        document.getElementById('id_salon').addEventListener('change', function () {
-            var salonId = this.value;
-            var armarioContainer = document.getElementById('armario-container');
-            var armarioSelect = document.getElementById('id_armario');
+document.getElementById('id_salon').addEventListener('change', function () {
+    var salonId = this.value;
+    var armarioContainer = document.getElementById('armario-container');
+    var armarioSelect = document.getElementById('id_armario');
 
-            if (salonId) {
-                // Mostrar el campo de armarios
-                armarioContainer.style.display = 'block';
+    if (salonId) {
+        // Mostrar el campo de armarios
+        armarioContainer.style.display = 'block';
 
-                // Limpiar el campo de armarios
-                armarioSelect.innerHTML = '<option value="">Seleccione un armario</option>';
+        // Limpiar el campo de armarios
+        armarioSelect.innerHTML = '<option value="">Seleccione un armario</option>';
 
-                // Hacer una petición AJAX para obtener los armarios del salón seleccionado
-                fetch('/salones/' + salonId + '/armarios')
-                    .then(response => response.json())
-                    .then(data => {
-                        data.forEach(armario => {
-                            var option = document.createElement('option');
-                            option.value = armario.id;
-                            option.text = armario.nombre_armario;
-                            armarioSelect.appendChild(option);
-                        });
-                    });
-            } else {
-                armarioContainer.style.display = 'none';
-            }
-        });
+        // Hacer una petición AJAX para obtener los armarios del salón seleccionado
+        fetch('/salones/' + salonId + '/armarios')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(armario => {
+                    var option = document.createElement('option');
+                    option.value = armario.id;
+                    option.text = armario.nombre_armario;
+                    armarioSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error al cargar los armarios:', error));
+    } else {
+        // Ocultar el contenedor si no se selecciona un salón
+        armarioContainer.style.display = 'none';
+    }
+});
+
     </script>
 </x-app-layout>

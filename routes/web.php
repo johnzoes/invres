@@ -18,9 +18,7 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
 
 
-    Route::middleware('auth')->group(function () {
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    });
+
     
     
     // Rutas relacionadas con el perfil del usuario autenticado
@@ -77,10 +75,13 @@ Route::prefix('armarios')->name('armarios.')->group(function () {
         Route::get('/{reserva}', [ReservaController::class, 'show'])->name('show')->middleware('permission:ver reservas');
         Route::put('/{reserva}', [ReservaController::class, 'update'])->name('update')->middleware('permission:editar reservas');
         Route::delete('/{reserva}', [ReservaController::class, 'destroy'])->name('destroy')->middleware('permission:eliminar reservas');
-        Route::post('/{reserva}/aprobar', [ReservaController::class, 'approve'])->name('approve')->middleware('permission:aprobar reservas');
-        Route::post('/{reserva}/rechazar', [ReservaController::class, 'reject'])->name('reject')->middleware('permission:rechazar reservas');
-        Route::post('/{reserva}/prestar', [ReservaController::class, 'lend'])->name('lend')->middleware('permission:prestar ítems');
-        Route::post('/{reserva}/devolver', [ReservaController::class, 'return'])->name('return')->middleware('permission:devolver ítems');
+
+        // Simplificación de nombres de acciones
+        Route::post('/{reserva}/approve', [ReservaController::class, 'approve'])->name('approve')->middleware('permission:aprobar reservas');
+        Route::post('/{reserva}/reject', [ReservaController::class, 'reject'])->name('reject')->middleware('permission:rechazar reservas');
+        Route::post('/{reserva}/lend', [ReservaController::class, 'lend'])->name('lend')->middleware('permission:prestar ítems');
+        Route::post('/{reserva}/return', [ReservaController::class, 'return'])->name('return')->middleware('permission:devolver ítems');
+        
     });
 
     // Rutas para notificaciones (solo accesible para asistente)

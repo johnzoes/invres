@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Notifications\NotificacionReserva;
 use App\Models\Notificacion;
+use App\Models\EstadoReserva;
 
 use App\Models\Reserva;
 use App\Models\DetalleReservaItem;
@@ -155,4 +155,66 @@ class ReservaController extends Controller
 
         return redirect()->route('reservas.index')->with('success', 'Reserva eliminada con éxito.');
     }
+
+
+
+        // Aprobar la reserva
+        public function approve($id)
+        {
+            $reserva = Reserva::findOrFail($id);
+            
+            // Registrar el estado como 'aceptado'
+            EstadoReserva::create([
+                'id_reserva' => $reserva->id,
+                'id_asistente' => auth()->user()->asistente->id,
+                'estado' => 'aceptado',
+                'fecha_estado' => now()->toDateString(),
+                'hora_estado' => now()->toTimeString(),
+            ]);
+
+            return redirect()->route('reservas.show', $id)->with('success', 'Reserva aceptada.');
+        }
+
+        // Rechazar la reserva
+        public function reject(Request $request, $id)
+        {
+            $reserva = Reserva::findOrFail($id);
+
+            EstadoReserva::create([
+                'id_reserva' => $reserva->id,
+                'id_asistente' => auth()->user()->asistente->id,
+                'estado' => 'rechazado',
+                'motivo_rechazo' => $request->motivo_rechazo,
+                'fecha_estado' => now()->toDateString(),
+                'hora_estado' => now()->toTimeString(),
+            ]);
+
+            return redirect()->route('reservas.show', $id)->with('error', 'Reserva rechazada.');
+        }
+
+        // Prestar físicamente el ítem
+        public function lend($detalleId)
+        {
+            $detalle = DetalleReservaItem::findOrFail($detalleId);
+
+            if ($detalle->estado == 'aceptado') {
+                $detalle->update(['estado' => 'prestado']);
+                return redirect()->back()->with('success', 'Ítem prestado físicamente.');
+            }
+
+            return redirect()->back()->with('error', 'No se puede prestar este ítem.');
+        }
+
+        // Registrar devolución del ítem
+        public function return($detalleId)
+        {
+            $detalle = DetalleReservaItem::findOrFail($detalleId);
+
+            if ($detalle->estado == 'prestado') {
+                $detalle->update(['estado' => 'devuelto']);
+                return redirect()->back()->with('success', 'Ítem devuelto.');
+            }
+
+            return redirect()->back()->with('error', 'No se puede devolver este ítem.');
+        }
 }

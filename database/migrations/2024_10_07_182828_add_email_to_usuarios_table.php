@@ -14,7 +14,10 @@ class AddEmailToUsuariosTable extends Migration
     public function up()
     {
         Schema::table('usuarios', function (Blueprint $table) {
-            $table->string('email')->unique()->after('nombre_usuario');
+            // Verifica si la columna 'email' no existe antes de agregarla
+            if (!Schema::hasColumn('usuarios', 'email')) {
+                $table->string('email')->unique()->after('nombre_usuario');
+            }
         });
     }
 
@@ -26,7 +29,10 @@ class AddEmailToUsuariosTable extends Migration
     public function down()
     {
         Schema::table('usuarios', function (Blueprint $table) {
-            $table->dropColumn('email');
+            // Verifica si la columna 'email' existe antes de eliminarla
+            if (Schema::hasColumn('usuarios', 'email')) {
+                $table->dropColumn('email');
+            }
         });
     }
 }

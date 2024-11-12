@@ -24,13 +24,13 @@
                             
                             @if($detalle->estado == 'pendiente')
                                 <!-- Formulario de Aprobación -->
-                                <form action="{{ route('reservas.approve', $reserva->id) }}" method="POST" class="inline">
+                                <form action="{{ route('reservas.approve', $detalle->id) }}" method="POST" class="inline" onsubmit="this.querySelector('button').disabled = true;">
                                     @csrf
                                     <x-primary-button type="submit" class="bg-green-500 hover:bg-green-700">Aprobar</x-primary-button>
                                 </form>
 
                                 <!-- Formulario de Rechazo -->
-                                <form action="{{ route('reservas.reject', $reserva->id) }}" method="POST" class="inline">
+                                <form action="{{ route('reservas.reject', $detalle->id) }}" method="POST" class="inline" onsubmit="this.querySelector('button').disabled = true;">
                                     @csrf
                                     <x-text-input type="text" name="motivo_rechazo" placeholder="Motivo de rechazo" required class="mr-2" />
                                     <x-primary-button type="submit" class="bg-red-500 hover:bg-red-700">Rechazar</x-primary-button>
@@ -38,14 +38,14 @@
                             
                             @elseif($detalle->estado == 'aceptado')
                                 <!-- Botón para prestar el ítem -->
-                                <form action="{{ route('reservas.lend', $detalle->id) }}" method="POST">
+                                <form action="{{ route('reservas.lend', $detalle->id) }}" method="POST" onsubmit="this.querySelector('button').disabled = true;">
                                     @csrf
                                     <x-primary-button type="submit" class="bg-blue-500 hover:bg-blue-700">Prestar Ítem</x-primary-button>
                                 </form>
                             
                             @elseif($detalle->estado == 'prestado')
                                 <!-- Botón para devolver el ítem -->
-                                <form action="{{ route('reservas.return', $detalle->id) }}" method="POST">
+                                <form action="{{ route('reservas.return', $detalle->id) }}" method="POST" onsubmit="this.querySelector('button').disabled = true;">
                                     @csrf
                                     <x-primary-button type="submit" class="bg-purple-500 hover:bg-purple-700">Devolver Ítem</x-primary-button>
                                 </form>

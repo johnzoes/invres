@@ -6,7 +6,7 @@ use App\Http\Controllers\ArmarioController;
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
-
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 // Rutas que requieren autenticación
@@ -84,15 +84,32 @@ Route::prefix('armarios')->name('armarios.')->group(function () {
         
     });
 
-    // Rutas para notificaciones (solo accesible para asistente)
-    Route::prefix('notificaciones')->name('notificaciones.')->group(function () {
+
+
+    Route::middleware(['auth', 'permission:ver notificaciones'])
+    ->prefix('notificaciones')
+    ->name('notificaciones.')
+    ->group(function () {
+        
+        // Ruta para ver todas las notificaciones
         Route::get('/', function () {
-            return view('notificaciones.index');
-        })->name('index')->middleware('permission:ver notificaciones');
-        Route::post('/marcar-leidas', function () {
-            // Lógica para marcar las notificaciones como leídas
-        })->name('leidas')->middleware('permission:marcar notificaciones como leídas');
+            return view('notificaciones.index', [
+                'notificaciones' => auth()->user()->notifications
+            ]);
+        })->name('index');
+    
+        // Ruta para marcar una notificación como leída
+        Route::post('/marcar-leida/{id}', function ($id) {
+            $notificacion = Auth::user()->notifications()->find($id);
+            
+            if ($notificacion) {
+                $notificacion->markAsRead();
+            }
+            
+            return redirect()->back()->with('success', 'Notificación marcada como leída.');
+        })->name('marcarLeida');
     });
+
 });
 
 // Cargar las rutas de autenticación

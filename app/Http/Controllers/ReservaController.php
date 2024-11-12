@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 use App\Models\Notificacion;
-use App\Models\EstadoReserva;
-
+use App\Models\HistorialEstadoItem;
+use App\Notifications\NotificacionReserva;
 use App\Models\Reserva;
 use App\Models\DetalleReservaItem;
 use App\Models\Asistente;
@@ -52,7 +52,6 @@ class ReservaController extends Controller
 
 
 
-
     public function store(Request $request)
     {
         // Validar la solicitud
@@ -62,9 +61,8 @@ class ReservaController extends Controller
             'items.*' => 'exists:items,id',
             'cantidad.*' => 'required|integer|min:1', // Validar las cantidades
         ]);
-
+    
         $asistentesNotificados = [];
-
     
         // Obtener el profesor autenticado
         $profesor = auth()->user()->profesor;
@@ -78,8 +76,6 @@ class ReservaController extends Controller
             'id_profesor' => $profesor->id,
             'id_unidad_didactica' => $request->id_unidad_didactica,
         ]);
-    
-        // Array para almacenar los IDs de los asistentes notificados
     
         // Guardar los ítems y cantidades en la tabla detalle_reserva_item y notificar a los asistentes
         foreach ($request->items as $itemId) {
@@ -103,20 +99,16 @@ class ReservaController extends Controller
                 // Obtener el asistente responsable del salón
                 $asistente = Asistente::where('id_salon', $salonId)->first();
                 if ($asistente && !in_array($asistente->id, $asistentesNotificados) && $asistente->usuario) {
-                    // Crear el mensaje de la notificación
-                    $notificationData = [
-                        'id_asistente' => $asistente->id,
-                        'id_reserva' => $reserva->id,
+                    // Notificar al asistente a través de Laravel Notifications
+                    $asistente->usuario->notify(new NotificacionReserva([
                         'mensaje' => "Nueva reserva de ítems en el salón $salonId",
-                        'es_leida' => 0, // Marcar como no leída
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ];
+                        'reserva_id' => $reserva->id,
+                        'usuario_remitente' => auth()->user()->nombre,
+                        'usuario_destinatario' => $asistente->usuario->nombre,
+                    ]));
     
-                 Notificacion::create($notificationData);
-
-                // Agregar el asistente al array para evitar notificaciones duplicadas
-                $asistentesNotificados[] = $asistente->id;    
+                    // Agregar el asistente al array para evitar notificaciones duplicadas
+                    $asistentesNotificados[] = $asistente->id;
                 }
             }
         }
@@ -158,63 +150,111 @@ class ReservaController extends Controller
 
 
 
-        // Aprobar la reserva
-        public function approve($id)
-        {
-            $reserva = Reserva::findOrFail($id);
-            
-            // Registrar el estado como 'aceptado'
-            EstadoReserva::create([
-                'id_reserva' => $reserva->id,
-                'id_asistente' => auth()->user()->asistente->id,
+
+    public function approve($detalleId)
+    {
+        try {
+            // Encontrar el detalle de la reserva
+            $detalle = DetalleReservaItem::findOrFail($detalleId);
+    
+            // Registrar el cambio en HistorialEstadoItem
+            HistorialEstadoItem::create([
+                'id_detalle_reserva_item' => $detalle->id,
                 'estado' => 'aceptado',
-                'fecha_estado' => now()->toDateString(),
-                'hora_estado' => now()->toTimeString(),
+                'fecha_estado' => now(),
             ]);
-
-            return redirect()->route('reservas.show', $id)->with('success', 'Reserva aceptada.');
+    
+            // Actualizar el estado del detalle de la reserva
+            $detalle->update(['estado' => 'aceptado']);
+    
+            // Verificar que la reserva, el profesor y el usuario existan
+            if ($detalle->reserva && $detalle->reserva->profesor && $detalle->reserva->profesor->usuario) {
+                $usuarioProfesor = $detalle->reserva->profesor->usuario;
+                $usuarioRemitente = auth()->user();
+    
+                // Verificar que el usuario tenga un email válido
+                if ($usuarioProfesor->email) {
+                    // Notificar al profesor
+                    $usuarioProfesor->notify(new NotificacionReserva([
+                        'mensaje' => 'Tu reserva ha sido aprobada',
+                        'reserva_id' => $detalle->reserva->id,
+                        'usuario_remitente' => $usuarioRemitente->nombre,
+                        'usuario_destinatario' => $usuarioProfesor->nombre,
+                    ]));
+                }
+            }
+    
+            return redirect()->route('reservas.show', $detalle->id_reserva)->with('success', 'Ítem aprobado.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Ocurrió un error al aprobar la reserva.');
         }
+    }
+    
+    
 
-        // Rechazar la reserva
-        public function reject(Request $request, $id)
+
+
+// Rechazar el ítem específico de la reserva
+        public function reject(Request $request, $detalleId)
         {
-            $reserva = Reserva::findOrFail($id);
+            // Encontrar el detalle de la reserva específico por su ID
+            $detalle = DetalleReservaItem::findOrFail($detalleId);
 
-            EstadoReserva::create([
-                'id_reserva' => $reserva->id,
-                'id_asistente' => auth()->user()->asistente->id,
+            // Registrar el cambio en HistorialEstadoItem con motivo de rechazo
+            HistorialEstadoItem::create([
+                'id_detalle_reserva_item' => $detalle->id,
                 'estado' => 'rechazado',
                 'motivo_rechazo' => $request->motivo_rechazo,
-                'fecha_estado' => now()->toDateString(),
-                'hora_estado' => now()->toTimeString(),
+                'fecha_estado' => now(),
             ]);
 
-            return redirect()->route('reservas.show', $id)->with('error', 'Reserva rechazada.');
+            // Actualizar el estado del detalle de la reserva
+            $detalle->update(['estado' => 'rechazado']);
+
+            return redirect()->route('reservas.show', $detalle->id_reserva)->with('error', 'Ítem rechazado.');
         }
 
-        // Prestar físicamente el ítem
+        // Prestar físicamente el ítem específico de la reserva
         public function lend($detalleId)
         {
             $detalle = DetalleReservaItem::findOrFail($detalleId);
 
             if ($detalle->estado == 'aceptado') {
                 $detalle->update(['estado' => 'prestado']);
+
+                // Registrar el cambio en HistorialEstadoItem
+                HistorialEstadoItem::create([
+                    'id_detalle_reserva_item' => $detalle->id,
+                    'estado' => 'prestado',
+                    'fecha_estado' => now(),
+                ]);
+
                 return redirect()->back()->with('success', 'Ítem prestado físicamente.');
             }
 
             return redirect()->back()->with('error', 'No se puede prestar este ítem.');
         }
 
-        // Registrar devolución del ítem
+        // Registrar devolución del ítem específico de la reserva
         public function return($detalleId)
         {
             $detalle = DetalleReservaItem::findOrFail($detalleId);
 
             if ($detalle->estado == 'prestado') {
                 $detalle->update(['estado' => 'devuelto']);
+
+                // Registrar el cambio en HistorialEstadoItem
+                HistorialEstadoItem::create([
+                    'id_detalle_reserva_item' => $detalle->id,
+                    'estado' => 'devuelto',
+                    'fecha_estado' => now(),
+                ]);
+
                 return redirect()->back()->with('success', 'Ítem devuelto.');
             }
 
             return redirect()->back()->with('error', 'No se puede devolver este ítem.');
         }
+
+
 }

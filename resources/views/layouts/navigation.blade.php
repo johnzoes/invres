@@ -36,20 +36,29 @@
         @endif
     </button>
 
+    <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
+    @forelse($notificaciones as $notificacion)
+        <div class="border-b border-gray-200 dark:border-gray-700 p-4">
+        <p class="font-semibold text-gray-900 dark:text-gray-200">{{ $notificacion->data['mensaje'] ?? 'Mensaje no disponible' }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Enviado por: {{ $notificacion->data['usuario_remitente'] ?? 'No disponible' }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Para: {{ $notificacion->data['usuario_destinatario'] ?? 'No disponible' }}</p>
+            <div class="mt-2 flex justify-between items-center">
+                @if($notificacion->read_at)
+                    <span class="text-xs text-green-500">Leído</span>
+                @else
+                    <form action="{{ route('notificaciones.marcarLeida', $notificacion->id) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="text-xs bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded">Marcar como leída</button>
+                    </form>
+                @endif
+            </div>
+        </div>
+    @empty
+        <p class="p-4 text-gray-500 dark:text-gray-400">No hay notificaciones</p>
+    @endforelse
+</div>
 
-                    <!-- Notifications Dropdown -->
-                    <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg overflow-hidden">
-                        <ul>
-                            @forelse($notificaciones as $notificacion)
-                                <li class="px-4 py-2 border-b hover:bg-gray-100">
-                                    {{ $notificacion->mensaje }}
-                                    <a href="{{ route('reservas.show', $notificacion->id_reserva) }}" class="text-blue-500">Ver reserva</a>
-                                </li>
-                            @empty
-                                <li class="px-4 py-2 text-gray-500">No tienes notificaciones nuevas</li>
-                            @endforelse
-                        </ul>
-                    </div>
+            
                 </div>
 
                 <!-- Settings Dropdown -->
@@ -113,3 +122,5 @@
         }
     });
 </script>
+
+

@@ -1,126 +1,96 @@
-<nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
-    <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
-                    </a>
-                </div>
+<nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 w-64 fixed h-full overflow-y-auto">
+    <div class="h-full flex flex-col">
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                </div>
-            </div>
-
-            <!-- Notifications & Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <!-- Notifications Button -->
-                    <div class="relative">
-                    <button id="notificationButton" class="relative">
-                    <!-- Icono de campana de Heroicons -->
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-white">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                        </svg>
-
-        <!-- Burbuja de notificación -->
-        @if(isset($notificaciones) && $notificaciones->count() > 0)
-            <span class="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500 px-2 text-white text-xs">
-                {{ $notificaciones->count() }}
-            </span>
-        @endif
-    </button>
-
-    <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
-    @forelse($notificaciones as $notificacion)
-        <div class="border-b border-gray-200 dark:border-gray-700 p-4">
-        <p class="font-semibold text-gray-900 dark:text-gray-200">{{ $notificacion->data['mensaje'] ?? 'Mensaje no disponible' }}</p>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Enviado por: {{ $notificacion->data['usuario_remitente'] ?? 'No disponible' }}</p>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Para: {{ $notificacion->data['usuario_destinatario'] ?? 'No disponible' }}</p>
-            <div class="mt-2 flex justify-between items-center">
-                @if($notificacion->read_at)
-                    <span class="text-xs text-green-500">Leído</span>
-                @else
-                    <form action="{{ route('notificaciones.marcarLeida', $notificacion->id) }}" method="POST">
-                        @csrf
-                        <button type="submit" class="text-xs bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded">Marcar como leída</button>
-                    </form>
-                @endif
-            </div>
+        <!-- Logo -->
+        <div class="p-4">
         </div>
-    @empty
-        <p class="p-4 text-gray-500 dark:text-gray-400">No hay notificaciones</p>
-    @endforelse
-</div>
 
-            
-                </div>
+        <!-- Enlaces de Navegación -->
+        <div class="flex-1 flex flex-col mt-5">
+            <nav class="flex flex-col flex-1 px-2 bg-white dark:bg-gray-800 space-y-1">
 
-                <!-- Settings Dropdown -->
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
-
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
-
-                    <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
-
-                        <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </form>
-                    </x-slot>
-                </x-dropdown>
-            </div>
-
-            <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900 focus:outline-none transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+         <!-- Botón de Notificaciones -->
+         <div class="relative mb-4">
+                <button id="notificationButton" class="relative flex items-center">
+                    <svg class="h-5 w-5 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
+                    @if(isset($notificaciones) && $notificaciones->count() > 0)
+                        <span class="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500 px-2 text-white text-xs">
+                            {{ $notificaciones->count() }}
+                        </span>
+                    @endif
                 </button>
             </div>
+
+            <!-- Incluir el dropdown de notificaciones -->  
+                @include('components.notification-dropdown')
+
+                <!-- Enlace de Inicio (visible para todos) -->
+                <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    <x-icon name="home" />
+                    <span>{{ __('Inicio') }}</span>
+                </x-nav-link>
+
+                <!-- Usuarios (Solo visible para Administradores) -->
+                @can('ver usuarios')
+                    <x-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.*')">
+                        <x-icon name="users" />
+                        <span>{{ __('Usuarios') }}</span>
+                    </x-nav-link>
+                @endcan
+
+                <!-- Ítems (visible para Administradores y Asistentes) -->
+                @can('ver items')
+                    <x-nav-link :href="route('items.index')" :active="request()->routeIs('items.*')">
+                        <x-icon name="items" />
+                        <span>{{ __('Ítems') }}</span>
+                    </x-nav-link>
+                @endcan
+
+                <!-- Salones (visible para Administradores) -->
+                @can('ver salones')
+                    <x-nav-link :href="route('salones.index')" :active="request()->routeIs('salones.*')">
+                        <x-icon name="salones" />
+                        <span>{{ __('Salones') }}</span>
+                    </x-nav-link>
+                @endcan
+
+                <!-- Armarios (visible para Administradores y Asistentes) -->
+                @can('ver armarios')
+                    <x-nav-link :href="route('armarios.index')" :active="request()->routeIs('armarios.*')">
+                        <x-icon name="armario" />
+                        <span>{{ __('Armarios') }}</span>
+                    </x-nav-link>
+                @endcan
+
+                <!-- Reservas (visible para Profesores y Asistentes) -->
+                @can('ver reservas')
+                    <x-nav-link :href="route('reservas.index')" :active="request()->routeIs('reservas.*')">
+                        <x-icon name="reservas" />
+                        <span>{{ __('Reservas') }}</span>
+                    </x-nav-link>
+                @endcan
+
+            </nav>
+        </div>
+
+        <!-- Perfil de Usuario y Cerrar Sesión -->
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+            <!-- Icono de Usuario y Nombre -->
+            <a href="{{ route('profile.edit') }}" class="flex items-center text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100">
+                <x-icon name="user" />
+                <span class="ml-2">{{ Auth::user()->nombre }}</span>
+            </a>
+        </div>
+
+        <div class="p-4">
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="w-full text-left text-red-500 hover:text-red-700">
+                    {{ __('Cerrar Sesión') }}
+                </button>
+            </form>
         </div>
     </div>
 </nav>
-
-<!-- JavaScript for Notifications Dropdown -->
-<script>
-    document.getElementById('notificationButton').addEventListener('click', function() {
-        document.getElementById('notificationDropdown').classList.toggle('hidden');
-    });
-
-    document.addEventListener('click', function(event) {
-        const notificationDropdown = document.getElementById('notificationDropdown');
-        const notificationButton = document.getElementById('notificationButton');
-
-        if (!notificationButton.contains(event.target) && !notificationDropdown.contains(event.target)) {
-            notificationDropdown.classList.add('hidden');
-        }
-    });
-</script>
-
-

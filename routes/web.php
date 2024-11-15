@@ -5,7 +5,7 @@ use App\Http\Controllers\SalonController;
 use App\Http\Controllers\ArmarioController;
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DashboardController;
+use App\Models\Salon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -17,16 +17,14 @@ Route::middleware('auth')->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
-
-
+    Route::get('/salones/{id}/armarios', [SalonController::class, 'getArmariosBySalon'])->name('salones.armarios');
     
-    
-    // Rutas relacionadas con el perfil del usuario autenticado
-    Route::prefix('profile')->name('profile.')->group(function () {
-        Route::get('/', [ProfileController::class, 'edit'])->name('edit');
-        Route::patch('/', [ProfileController::class, 'update'])->name('update');
-        Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
-    });
+// Rutas relacionadas con el perfil del usuario autenticado
+Route::middleware(['auth'])->prefix('profile')->name('profile.')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('destroy');
+});
 
     // Rutas para la gestión de usuarios (accesibles por admin, profesor y asistente, con permisos gestionados por middleware)
     Route::resource('usuarios', UsuarioController::class)->middleware('permission:ver usuarios|crear usuarios|editar usuarios|eliminar usuarios');

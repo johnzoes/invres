@@ -60,6 +60,8 @@ class ReservaController extends Controller
             'items' => 'required|array',
             'items.*' => 'exists:items,id',
             'cantidad.*' => 'required|integer|min:1', // Validar las cantidades
+            'turno' => 'required|in:mañana,noche', // Validar el turno
+
         ]);
     
         $asistentesNotificados = [];
@@ -75,6 +77,8 @@ class ReservaController extends Controller
             'fecha_prestamo' => now(),
             'id_profesor' => $profesor->id,
             'id_unidad_didactica' => $request->id_unidad_didactica,
+            'turno' => $request->turno,
+
         ]);
     
         // Guardar los ítems y cantidades en la tabla detalle_reserva_item y notificar a los asistentes
@@ -96,8 +100,11 @@ class ReservaController extends Controller
             if ($item && $item->armario && $item->armario->salon) {
                 $salonId = $item->armario->salon->id;
     
-                // Obtener el asistente responsable del salón
-                $asistente = Asistente::where('id_salon', $salonId)->first();
+            // Obtener el asistente responsable del salón y turno
+            $asistente = Asistente::where('id_salon', $salonId)
+                                  ->where('turno', $request->turno) // Filtrar por el turno seleccionado
+                                  ->first();
+
                 if ($asistente && !in_array($asistente->id, $asistentesNotificados) && $asistente->usuario) {
                     // Notificar al asistente a través de Laravel Notifications
                     $asistente->usuario->notify(new NotificacionReserva([
@@ -105,6 +112,8 @@ class ReservaController extends Controller
                         'reserva_id' => $reserva->id,
                         'usuario_remitente' => auth()->user()->nombre,
                         'usuario_destinatario' => $asistente->usuario->nombre,
+                        'turno' => $request->turno,
+
                     ]));
     
                     // Agregar el asistente al array para evitar notificaciones duplicadas

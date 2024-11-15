@@ -12,7 +12,7 @@ class Reserva extends Model
     protected $table = 'reservas';
 
     // Definimos los campos que se pueden asignar de forma masiva
-    protected $fillable = ['fecha_prestamo', 'fecha_devolucion', 'id_profesor', 'id_unidad_didactica'];
+    protected $fillable = ['fecha_prestamo', 'fecha_devolucion', 'id_profesor', 'id_unidad_didactica', 'turno'];
 
     // Relación: Una reserva pertenece a un profesor
     public function profesor()

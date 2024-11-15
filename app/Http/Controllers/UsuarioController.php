@@ -91,12 +91,15 @@ class UsuarioController extends Controller
 }
 
    // Mostrar el formulario de edición de roles y datos del usuario
-public function edit($id)
-{
-    $usuario = Usuario::findOrFail($id);
-    $roles = Role::all(); // Cargar todos los roles disponibles
-    return view('usuarios.edit', compact('usuario', 'roles'));
-}
+   public function edit($id)
+   {
+       $usuario = Usuario::with('roles', 'asistente')->findOrFail($id);
+       $roles = Role::all(); // Obtén todos los roles
+       $salones = Salon::all(); // Obtén todos los salones disponibles
+   
+       return view('usuarios.edit', compact('usuario', 'roles', 'salones'));
+   }
+   
 
 // Actualizar los roles y la información del usuario
 public function update(Request $request, $id)

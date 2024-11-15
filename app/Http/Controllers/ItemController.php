@@ -55,11 +55,13 @@ class ItemController extends Controller
 
     // Mostrar el formulario de edición para un ítem
     public function edit($id_item)
-    {
+    {       
+ $salones = Salon::all(); 
+
         $item = Item::findOrFail($id_item);
         $categorias = Categoria::all();  // Para cargar las categorías disponibles
         $armarios = Armario::all();  // Para cargar los armarios disponibles
-        return view('items.form', compact('item', 'categorias', 'armarios'));
+        return view('items.form', compact('item', 'categorias', 'armarios', 'salones'));
     }
 
     // Actualizar un ítem existente

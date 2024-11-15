@@ -82,6 +82,9 @@ Route::prefix('armarios')->name('armarios.')->group(function () {
         
     });
 
+    Route::get('/reservas/{id}/pdf', [ReservaController::class, 'generarPDF'])->name('reservas.pdf');
+
+
 
 
     Route::middleware(['auth', 'permission:ver notificaciones'])

@@ -54,6 +54,11 @@
                     @endforeach
                 </ul>
 
+                <a href="{{ route('reservas.pdf', $reserva->id) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                 Descargar PDF
+                </a>
+
+
                 <div class="mt-4">
                     <a href="{{ route('reservas.index') }}" class="text-blue-500 hover:underline">Volver a la lista de reservas</a>
                 </div>

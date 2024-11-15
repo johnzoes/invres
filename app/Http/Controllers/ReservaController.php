@@ -11,6 +11,7 @@ use App\Models\Profesor;
 use App\Models\UnidadDidactica;
 use App\Models\Item;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 
 class ReservaController extends Controller
@@ -264,6 +265,32 @@ class ReservaController extends Controller
 
             return redirect()->back()->with('error', 'No se puede devolver este ítem.');
         }
+
+
+
+        public function generarPDF($id)
+        {
+            // Cargar la reserva con sus relaciones
+            $reserva = Reserva::with('profesor.usuario', 'unidadDidactica', 'detalles.item')->findOrFail($id);
+        
+            // Obtener el profesor desde la relación
+            $profesor = $reserva->profesor;
+        
+            // Verificar si la reserva tiene un profesor asociado
+            if (!$profesor) {
+                return redirect()->back()->with('error', 'No se pudo encontrar el profesor asociado a esta reserva.');
+            }
+        
+            // Cargar los detalles de la reserva
+            $detalles = $reserva->detalles;
+        
+            // Generar el PDF con la vista y pasar las variables necesarias
+            $pdf = Pdf::loadView('reservas.solicitud_pdf', compact('reserva', 'detalles', 'profesor'));
+        
+            // Descargar el PDF
+            return $pdf->download('solicitud_reserva_' . $reserva->id . '.pdf');
+        }
+
 
 
 }

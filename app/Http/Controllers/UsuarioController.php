@@ -30,6 +30,15 @@ class UsuarioController extends Controller
         $usuarios = Usuario::with('roles')->get(); // Cargar los roles de los usuarios
         return view('usuarios.index', compact('usuarios'));
     }
+
+    public function show($id)
+{
+    // Buscar el usuario con sus relaciones
+    $usuario = Usuario::with(['roles', 'profesor', 'asistente.salon'])->findOrFail($id);
+
+    // Verifica el rol del usuario y muestra información según el caso
+    return view('usuarios.show', compact('usuario'));
+}
     
 
     // Mostrar el formulario de creación de usuarios
@@ -41,54 +50,46 @@ class UsuarioController extends Controller
     }
     
 
-    // Almacenar un nuevo usuario
+    // Almacenar un nuevo usuario    // Almacenar un nuevo usuario
     public function store(Request $request)
-{
-    // Validar los datos comunes para todos los usuarios
-    $data = $request->validate([
-        'nombre_usuario' => 'required|string|max:50|unique:usuarios',
-        'nombre' => 'required|string|max:50',
-        'apellidos' => 'required|string|max:50',
-        'email' => 'required|string|email|max:255|unique:usuarios', // Añadir validación de email
-        'password' => 'required|string|min:6',
-        'rol' => 'required|in:admin,profesor,asistente',
-    ]);
-
-    // Crear el usuario y asignarle el rol
-    $usuario = Usuario::create([
-        'nombre_usuario' => $data['nombre_usuario'],
-        'nombre' => $data['nombre'],
-        'apellidos' => $data['apellidos'],
-        'email' => $data['email'], // Guardar el email
-        'password' => Hash::make($data['password']), // Hash de la contraseña
-    ]);
-
-    // Asignar el rol seleccionado
-    $usuario->assignRole($data['rol']);
-
-    // Si el rol es profesor, crear un registro en la tabla profesores
-    if ($data['rol'] === 'profesor') {
-        Profesor::create([
-            'id_usuario' => $usuario->id,
+    {
+        $data = $request->validate([
+            'nombre_usuario' => 'required|string|max:50|unique:usuarios',
+            'nombre' => 'required|string|max:50',
+            'apellidos' => 'required|string|max:50',
+            'email' => 'required|string|email|max:255|unique:usuarios',
+            'password' => 'required|string|min:6',
+            'rol' => 'required|in:admin,profesor,asistente',
         ]);
+
+        $usuario = Usuario::create([
+            'nombre_usuario' => $data['nombre_usuario'],
+            'nombre' => $data['nombre'],
+            'apellidos' => $data['apellidos'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+        ]);
+
+        $usuario->assignRole($data['rol']);
+
+        if ($data['rol'] === 'profesor') {
+            Profesor::create(['id_usuario' => $usuario->id]);
+        } elseif ($data['rol'] === 'asistente') {
+            $request->validate([
+                'id_salon' => 'required|exists:salones,id',
+                'turno' => 'required|in:mañana,noche',
+            ]);
+
+            Asistente::create([
+                'id_usuario' => $usuario->id,
+                'id_salon' => $request->id_salon,
+                'turno' => $request->turno,
+            ]);
+        }
+
+        return redirect()->route('usuarios.index')->with('success', 'Usuario creado con éxito.');
     }
 
-    // Si el rol es asistente, crear un registro en la tabla asistentes
-    if ($data['rol'] === 'asistente') {
-        $request->validate([
-            'id_salon' => 'required|exists:salones,id',
-            'turno' => 'required|in:mañana,noche',
-        ]);
-
-        Asistente::create([
-            'id_usuario' => $usuario->id,
-            'id_salon' => $request->id_salon,
-            'turno' => $request->turno,
-        ]);
-    }
-
-    return redirect()->route('usuarios.index')->with('success', 'Usuario creado con éxito.');
-}
 
    // Mostrar el formulario de edición de roles y datos del usuario
    public function edit($id)
@@ -101,47 +102,39 @@ class UsuarioController extends Controller
    }
    
 
-// Actualizar los roles y la información del usuario
-public function update(Request $request, $id)
-{
-    $usuario = Usuario::findOrFail($id);
+   public function update(Request $request, $id)
+   {
+       $usuario = Usuario::findOrFail($id);
+   
+       // Validar los datos
+       $data = $request->validate([
+           'nombre_usuario' => 'required|string|max:50|unique:usuarios,nombre_usuario,' . $id,
+           'nombre' => 'required|string|max:50',
+           'apellidos' => 'required|string|max:50',
+           'email' => 'required|string|email|max:255|unique:usuarios,email,' . $id, // Asegurar que el email sea único excepto para este usuario
+       ]);
+   
+       // Actualizar la información del usuario
+       $usuario->update($data);
+   
+       return redirect()->route('usuarios.index')->with('success', 'Usuario actualizado con éxito.');
+   }
+   
 
-    // Validar los datos incluyendo el email
-    $data = $request->validate([
-        'nombre_usuario' => 'required|string|max:50|unique:usuarios,nombre_usuario,' . $id,
-        'nombre' => 'required|string|max:50',
-        'apellidos' => 'required|string|max:50',
-        'email' => 'required|string|email|max:255|unique:usuarios,email,' . $id, // Asegurar que el email sea único excepto para el usuario actual
-        'password' => 'nullable|string|min:6',
-        'roles' => 'required|array',
-        'roles.*' => 'exists:roles,name',
-    ]);
+    // Eliminar un usuario
+    public function destroy($id)
+    {
+        $usuario = Usuario::findOrFail($id);
 
-    // Actualizar la información del usuario
-    $usuario->update([
-        'nombre_usuario' => $data['nombre_usuario'],
-        'nombre' => $data['nombre'],
-        'apellidos' => $data['apellidos'],
-        'email' => $data['email'], // Actualizar el email
-        'password' => $data['password'] ? Hash::make($data['password']) : $usuario->password, // Solo actualizar la contraseña si se proporciona
-    ]);
+        if ($usuario->hasRole('profesor')) {
+            Profesor::where('id_usuario', $usuario->id)->delete();
+        } elseif ($usuario->hasRole('asistente')) {
+            Asistente::where('id_usuario', $usuario->id)->delete();
+        }
 
-    // Actualizar los roles seleccionados
-    $usuario->syncRoles($data['roles']);
+        $usuario->delete();
 
-    return redirect()->route('usuarios.index')->with('success', 'Usuario actualizado con éxito.');
-}
-
-public function destroy($id)
-{
-    // Busca el usuario por su ID
-    $usuario = Usuario::findOrFail($id);
-
-    // Elimina el usuario
-    $usuario->delete();
-
-    // Redirige a la lista de usuarios con un mensaje de éxito
-    return redirect()->route('usuarios.index')->with('success', 'Usuario eliminado correctamente');
-}
+        return redirect()->route('usuarios.index')->with('success', 'Usuario eliminado correctamente.');
+    }
 
 }

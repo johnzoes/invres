@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 w-64 fixed h-full overflow-y-auto">
+<nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 w-64 fixed h-full overflow-y-auto z-20">
     <div class="h-full flex flex-col">
 
         <!-- Logo -->
@@ -79,8 +79,8 @@
         <div class="p-4 border-t border-gray-200 dark:border-gray-700">
             <!-- Icono de Usuario y Nombre -->
             <a href="{{ route('profile.edit') }}" class="flex items-center text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100">
-                <x-icon name="user" />
-                <span class="ml-2">{{ Auth::user()->nombre }}</span>
+                <x-icon name="user"/>
+                <p class="ml-1">{{ Auth::user()->nombre }}</p>
             </a>
         </div>
 

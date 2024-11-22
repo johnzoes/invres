@@ -45,17 +45,7 @@ class AddTimestampsToTables extends Migration
             }
         });
 
-        Schema::table('estado_reserva', function (Blueprint $table) {
-            if (!Schema::hasColumn('estado_reserva', 'created_at')) {
-                $table->timestamps();  // Agrega created_at y updated_at si no existen
-            }
-        });
 
-        Schema::table('notificaciones', function (Blueprint $table) {
-            if (!Schema::hasColumn('notificaciones', 'created_at')) {
-                $table->timestamps();  // Agrega created_at y updated_at si no existen
-            }
-        });
     }
 
     public function down()
@@ -85,12 +75,6 @@ class AddTimestampsToTables extends Migration
             $table->dropTimestamps();
         });
 
-        Schema::table('estado_reserva', function (Blueprint $table) {
-            $table->dropTimestamps();
-        });
 
-        Schema::table('notificaciones', function (Blueprint $table) {
-            $table->dropTimestamps();
-        });
     }
 }

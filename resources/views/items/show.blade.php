@@ -19,6 +19,11 @@
                         <p>{{ $item->descripcion }}</p>
                     </div>
 
+                    @if(isset($item) && $item->imagen)
+    <img src="{{ asset('storage/' . $item->imagen) }}" alt="Imagen del Ítem" class="w-32 h-32 object-cover rounded-lg">
+@endif
+
+
                     <div class="mb-4">
                         <strong>Código BCI:</strong>
                         <p>{{ $item->codigo_bci }}</p>

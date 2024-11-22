@@ -71,6 +71,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'editar reservas',
             'eliminar reservas',
             'ver items',
+            'ver notificaciones',
+            'marcar notificaciones como leídas',
         ];
         $profesor->syncPermissions($profesorPermissions);
 

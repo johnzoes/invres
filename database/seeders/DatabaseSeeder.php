@@ -23,7 +23,6 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             ItemsSeeder::class,
             UnidadDidacticaSeeder::class,
-            UsuariosSeeder::class,
         ]);
     }
 }

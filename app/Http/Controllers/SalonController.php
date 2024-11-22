@@ -55,13 +55,21 @@ class SalonController extends Controller
     }
 
     // Eliminar un salón
-    public function destroy($id_salon)
+    public function destroy($id)
     {
-        $salon = Salon::findOrFail($id_salon);
+        $salon = Salon::findOrFail($id);
+    
+        // Verificar si hay armarios asociados al salón
+        if ($salon->armarios()->count() > 0) {
+            return redirect()->route('salones.index')->with('error', "El salón '{$salon->nombre_salon}' tiene armarios asociados y no puede eliminarse.");
+        }
+    
+        // Eliminar el salón si no tiene armarios asociados
         $salon->delete();
-
-        return redirect()->route('salones.index')->with('success', 'Salón eliminado con éxito.');
+    
+        return redirect()->route('salones.index')->with('success', "El salón '{$salon->nombre_salon}' ha sido eliminado con éxito.");
     }
+    
 
     public function getArmariosBySalon($id)
 {

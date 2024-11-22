@@ -3,6 +3,9 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\SalonController;
 use App\Http\Controllers\ArmarioController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HistorialEstadoController;
+
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Salon;
@@ -13,9 +16,9 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth')->group(function () {
 
     // Ruta de inicio y dashboard
-    Route::get('/', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/historial/{detalleReservaItemId}', [HistorialEstadoController::class, 'show'])
+    ->name('historial.show');
 
     Route::get('/salones/{id}/armarios', [SalonController::class, 'getArmariosBySalon'])->name('salones.armarios');
     
@@ -28,9 +31,11 @@ Route::middleware(['auth'])->prefix('profile')->name('profile.')->group(function
 
     // Rutas para la gestión de usuarios (accesibles por admin, profesor y asistente, con permisos gestionados por middleware)
     Route::resource('usuarios', UsuarioController::class)->middleware('permission:ver usuarios|crear usuarios|editar usuarios|eliminar usuarios');
+    Route::get('/usuarios/{id}', [UsuarioController::class, 'show'])->name('usuarios.show');
 
     // Rutas para la gestión de ítems
     Route::prefix('items')->name('items.')->group(function () {
+        Route::get('/search', [ItemController::class, 'search'])->name('search');
         Route::get('/', [ItemController::class, 'index'])->name('index')->middleware('permission:ver items');
         Route::get('/create', [ItemController::class, 'create'])->name('create')->middleware('permission:crear items');
         Route::get('/{item}', [ItemController::class, 'show'])->name('show')->middleware('permission:ver items');
@@ -69,6 +74,7 @@ Route::prefix('armarios')->name('armarios.')->group(function () {
     Route::prefix('reservas')->name('reservas.')->group(function () {
         Route::get('/', [ReservaController::class, 'index'])->name('index')->middleware('permission:ver reservas');
         Route::get('/create', [ReservaController::class, 'create'])->name('create')->middleware('permission:crear reservas');
+        Route::post('/createtwo', [ReservaController::class, 'createtwo'])->name('createtwo')->middleware('permission:crear reservas');
         Route::post('/', [ReservaController::class, 'store'])->name('store')->middleware('permission:crear reservas');
         Route::get('/{reserva}', [ReservaController::class, 'show'])->name('show')->middleware('permission:ver reservas');
         Route::put('/{reserva}', [ReservaController::class, 'update'])->name('update')->middleware('permission:editar reservas');

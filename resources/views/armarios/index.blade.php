@@ -27,19 +27,19 @@
                     <table class="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg">
                         <thead>
                             <tr class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">
-                                <th class="py-2 px-4">ID</th>
-                                <th class="py-2 px-4">Nombre</th>
-                                <th class="py-2 px-4">Salón</th>
-                                <th class="py-2 px-4">Acciones</th>
+                                <th class="py-2 text-left px-4">ID</th>
+                                <th class="py-2 text-left px-4">Nombre</th>
+                                <th class="py-2 text-left px-4">Salón</th>
+                                <th class="py-2 text-left px-4">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($armarios as $armario)
                                 <tr class="border-t dark:border-gray-600">
-                                    <td class="py-2 px-4">{{ $armario->id_armario }}</td>
-                                    <td class="py-2 px-4">{{ $armario->nombre_armario }}</td>
-                                    <td class="py-2 px-4">{{ $armario->salon->nombre_salon }}</td>
-                                    <td class="py-2 px-4">
+                                    <td class="py-2 text-left px-4">{{ $armario->id }}</td>
+                                    <td class="py-2 text-left px-4">{{ $armario->nombre_armario }}</td>
+                                    <td class="py-2 text-left  px-4">{{ $armario->salon->nombre_salon }}</td>
+                                    <td class="py-2 text-left px-4">
                                         <!-- Botón para editar -->
                                         <a href="{{ route('armarios.edit', $armario->id) }}" class="text-blue-500 hover:underline">Editar</a> |
                                         

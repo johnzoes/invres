@@ -27,4 +27,7 @@ class HistorialEstadoItem extends Model
     {
         return $this->belongsTo(DetalleReservaItem::class, 'id_detalle_reserva_item');
     }
+
+
+
 }

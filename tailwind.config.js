@@ -5,7 +5,14 @@ module.exports = {
       './resources/**/*.vue',
   ],
   theme: {
-      extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+      },
+    },
   },
-  plugins: [],
+  plugins: [
+    require('tailwind-scrollbar'),
+
+  ],
 }

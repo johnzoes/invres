@@ -1,4 +1,3 @@
-<!-- resources/views/components/notification-dropdown.blade.php -->
 <div id="notificationDropdown" class="hidden fixed left-64 top-10 w-96 bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden z-50">
     <!-- Encabezado -->
     <div class="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -7,7 +6,11 @@
     
     <!-- Lista de Notificaciones -->
     <div class="max-h-64 overflow-y-auto">
-        @forelse($notificaciones as $notificacion)
+        @php
+            use Carbon\Carbon;
+        @endphp
+
+        @forelse($notificaciones->sortByDesc('created_at') as $notificacion)
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700">
                 <p class="font-semibold text-gray-900 dark:text-gray-200">{{ $notificacion->data['mensaje'] ?? 'Mensaje no disponible' }}</p>
                 <p class="text-sm text-gray-500 dark:text-gray-400">Enviado por: {{ $notificacion->data['usuario_remitente'] ?? 'No disponible' }}</p>
@@ -28,6 +31,24 @@
                         Ver Reserva
                     </a>
                 </div>
+                <!-- Tiempo relativo -->
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 bg-opacity-50 rounded px-2 py-1 inline-block">
+                        {{
+                            $notificacion->created_at->diffInSeconds() < 60
+                                ? intval($notificacion->created_at->diffInSeconds()) . ' segundo(s)'
+                                : ($notificacion->created_at->diffInMinutes() < 60
+                                    ? intval($notificacion->created_at->diffInMinutes()) . ' minuto(s)'
+                                    : ($notificacion->created_at->diffInHours() < 24
+                                        ? floor($notificacion->created_at->diffInHours()) . ' hora(s)'
+                                        : ($notificacion->created_at->diffInDays() < 7
+                                            ? floor($notificacion->created_at->diffInDays()) . ' día(s)'
+                                            : floor($notificacion->created_at->diffInWeeks()) . ' semana(s)')
+                                    )
+                                )
+                        }}
+                    </p>
+
+                </p>
             </div>
         @empty
             <p class="p-4 text-gray-500 dark:text-gray-400">No hay notificaciones</p>

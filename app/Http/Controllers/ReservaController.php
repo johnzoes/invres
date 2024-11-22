@@ -8,6 +8,8 @@ use App\Models\Reserva;
 use App\Models\DetalleReservaItem;
 use App\Models\Asistente;
 use App\Models\Profesor;
+use App\Models\Categoria;
+
 use App\Models\UnidadDidactica;
 use App\Models\Item;
 use Illuminate\Http\Request;
@@ -39,17 +41,41 @@ class ReservaController extends Controller
 
     // Mostrar el formulario para crear una nueva reserva
     public function create()
-    {
-        // Traer los profesores, unidades didácticas e ítems para mostrarlos en el formulario
-        $profesores = Profesor::with('usuario')->get();
-        $unidades_didacticas = UnidadDidactica::all();
-        $items = Item::all();
+{
+    // Traer los profesores, categorías y ítems relacionados
+    $profesores = Profesor::with('usuario')->get();
+    $categorias = Categoria::all();
 
-        // Retornar la vista con los datos necesarios para la creación de la reserva
-        return view('reservas.create', compact('profesores', 'unidades_didacticas', 'items'));
+    $items = Item::with('categoria')
+                ->where('cantidad', '>', 0)
+                ->get();
+    // Retornar la vista con los datos necesarios para la creación de la reserva
+    return view('reservas.create', compact('profesores', 'categorias', 'items'));
+}
+
+public function createtwo(Request $request)
+{
+    // Validar la solicitud
+    $request->validate([
+        'items' => 'required|array',
+        'items.*' => 'exists:items,id',
+        'cantidad.*' => 'required|integer|min:1',
+    ]);
+
+    // Guardar los ítems seleccionados y sus cantidades en la sesión
+    $itemsSeleccionados = [];
+    foreach ($request->items as $itemId) {
+        $itemsSeleccionados[$itemId] = $request->input('cantidad.' . $itemId);
     }
 
+    // Almacenar en la sesión
+    session(['items' => $itemsSeleccionados]);
 
+    // Cargar las unidades didácticas para la siguiente vista
+    $unidades_didacticas = UnidadDidactica::all();
+
+    return view('reservas.create-two', compact('unidades_didacticas'));
+}
 
 
 
@@ -60,9 +86,8 @@ class ReservaController extends Controller
             'id_unidad_didactica' => 'required|exists:unidades_didacticas,id',
             'items' => 'required|array',
             'items.*' => 'exists:items,id',
-            'cantidad.*' => 'required|integer|min:1', // Validar las cantidades
-            'turno' => 'required|in:mañana,noche', // Validar el turno
-
+            'cantidad.*' => 'required|integer|min:1',
+            'turno' => 'required|in:mañana,noche',
         ]);
     
         $asistentesNotificados = [];
@@ -79,46 +104,53 @@ class ReservaController extends Controller
             'id_profesor' => $profesor->id,
             'id_unidad_didactica' => $request->id_unidad_didactica,
             'turno' => $request->turno,
-
         ]);
     
         // Guardar los ítems y cantidades en la tabla detalle_reserva_item y notificar a los asistentes
         foreach ($request->items as $itemId) {
+
+            // Obtener la cantidad de ítems solicitados
             $cantidad = $request->input('cantidad.' . $itemId);
     
-            // Crear el detalle de la reserva
-            $detalleReserva = DetalleReservaItem::create([
-                'id_reserva' => $reserva->id,
-                'id_item' => $itemId,
-                'fecha_reserva' => now(),
-                'hora_reserva' => now(),
-                'cantidad_reservada' => $cantidad,
-                'estado' => 'pendiente',
-            ]);
+            // Obtener el ítem desde la base de datos
+            $item = Item::find($itemId);
+            if ($item) {
+                // Verificar si hay suficiente cantidad en el inventario
+                if ($item->cantidad < $cantidad) {
+                    return redirect()->route('reservas.create')->withErrors("No hay suficiente stock para el ítem: {$item->descripcion}");
+                }
     
-            // Obtener el armario del ítem para identificar el salón y el asistente correspondiente
-            $item = Item::with('armario.salon')->find($itemId);
-            if ($item && $item->armario && $item->armario->salon) {
-                $salonId = $item->armario->salon->id;
     
-            // Obtener el asistente responsable del salón y turno
-            $asistente = Asistente::where('id_salon', $salonId)
-                                  ->where('turno', $request->turno) // Filtrar por el turno seleccionado
-                                  ->first();
-
-                if ($asistente && !in_array($asistente->id, $asistentesNotificados) && $asistente->usuario) {
-                    // Notificar al asistente a través de Laravel Notifications
-                    $asistente->usuario->notify(new NotificacionReserva([
-                        'mensaje' => "Nueva reserva de ítems en el salón $salonId",
-                        'reserva_id' => $reserva->id,
-                        'usuario_remitente' => auth()->user()->nombre,
-                        'usuario_destinatario' => $asistente->usuario->nombre,
-                        'turno' => $request->turno,
-
-                    ]));
+                // Crear el detalle de la reserva
+                $detalleReserva = DetalleReservaItem::create([
+                    'id_reserva' => $reserva->id,
+                    'id_item' => $itemId,
+                    'fecha_reserva' => now(),
+                    'hora_reserva' => now(),
+                    'cantidad_reservada' => $cantidad,
+                    'estado' => 'pendiente',
+                ]);
     
-                    // Agregar el asistente al array para evitar notificaciones duplicadas
-                    $asistentesNotificados[] = $asistente->id;
+                // Obtener el armario del ítem para notificar al asistente
+                if ($item->armario && $item->armario->salon) {
+                    $salonId = $item->armario->salon->id;
+    
+                    // Obtener el asistente responsable del salón y turno
+                    $asistente = Asistente::where('id_salon', $salonId)
+                                          ->where('turno', $request->turno)
+                                          ->first();
+    
+                    if ($asistente && !in_array($asistente->id, $asistentesNotificados) && $asistente->usuario) {
+                        // Notificar al asistente
+                        $asistente->usuario->notify(new NotificacionReserva([
+                            'mensaje' => "Nueva reserva de ítems en el salón $salonId",
+                            'reserva_id' => $reserva->id,
+                            'usuario_remitente' => auth()->user()->nombre,
+                            'usuario_destinatario' => $asistente->usuario->nombre,
+                            'turno' => $request->turno,
+                        ]));
+                        $asistentesNotificados[] = $asistente->id;
+                    }
                 }
             }
         }
@@ -126,21 +158,37 @@ class ReservaController extends Controller
         return redirect()->route('reservas.index')->with('success', 'Reserva creada con éxito y notificaciones enviadas a los asistentes.');
     }
     
+    
 
     // Mostrar los detalles de una reserva específica
     public function show($id)
-    {
-        // Busca la reserva por su ID
-        $reserva = Reserva::with('detalles.item', 'profesor.usuario', 'unidadDidactica')->find($id);
+{
+    // Obtener la reserva junto con sus relaciones
+    $reserva = Reserva::with('detalles.item.armario.salon', 'profesor.usuario', 'unidadDidactica')->find($id);
 
-        if (!$reserva) {
-            return redirect()->route('reservas.index')->with('error', 'Reserva no encontrada.');
-        }
-
-        return view('reservas.show', compact('reserva'));
+    if (!$reserva) {
+        return redirect()->route('reservas.index')->with('error', 'Reserva no encontrada.');
     }
 
+    // Obtener el usuario autenticado y verificar si es un asistente
+    $asistente = auth()->user()->asistente;
 
+    if ($asistente) {
+        // Filtrar los detalles de la reserva que están bajo el control del asistente
+        $detallesFiltrados = $reserva->detalles->filter(function ($detalle) use ($asistente, $reserva) {
+            $salon = $detalle->item->armario->salon;
+            return $salon && $salon->id == $asistente->id_salon && $asistente->turno == $reserva->turno;
+        });
+    } else {
+        // Si no es asistente, no tiene permisos para gestionar ítems
+        $detallesFiltrados = collect();
+    }
+
+    // Pasar solo los detalles filtrados a la vista
+    return view('reservas.show', compact('reserva', 'detallesFiltrados'));
+}
+
+    
 
     // Eliminar una reserva
     public function destroy($id)
@@ -173,6 +221,14 @@ class ReservaController extends Controller
                 'estado' => 'aceptado',
                 'fecha_estado' => now(),
             ]);
+
+        // Reducir la cantidad en el inventario del ítem y actualizar su estado
+        $item = $detalle->item;
+        if ($item) {
+            $item->cantidad -= $detalle->cantidad_reservada;
+            $item->actualizarEstado(); // Actualiza el estado del ítem ('ocupado' si está agotado)
+            $item->save();
+        }
     
             // Actualizar el estado del detalle de la reserva
             $detalle->update(['estado' => 'aceptado']);
@@ -260,6 +316,14 @@ class ReservaController extends Controller
                     'fecha_estado' => now(),
                 ]);
 
+                        // Aumentar la cantidad en el inventario del ítem y actualizar su estado
+                $item = $detalle->item;
+                if ($item) {
+                    $item->cantidad += $detalle->cantidad_reservada;
+                    $item->actualizarEstado(); // Actualiza el estado del ítem ('disponible' si hay stock)
+                    $item->save();
+                }
+
                 return redirect()->back()->with('success', 'Ítem devuelto.');
             }
 
@@ -290,6 +354,54 @@ class ReservaController extends Controller
             // Descargar el PDF
             return $pdf->download('solicitud_reserva_' . $reserva->id . '.pdf');
         }
+
+
+        public function obtenerReservas($profesorId = null)
+        {
+            // Consulta base para obtener todas las reservas con sus relaciones
+            $queryBase = Reserva::with(['unidadDidactica', 'detalles.item', 'profesor']);
+        
+            // Si se proporciona un ID de profesor, filtramos por él
+            if ($profesorId) {
+                $queryBase->where('id_profesor', $profesorId);
+            }
+        
+            // Agrupamos las reservas por estado en una sola consulta
+            $reservas = $queryBase->whereHas('detalles', function ($query) {
+                $query->whereIn('estado', ['pendiente', 'aceptado', 'prestado', 'devuelto']);
+            })->get();
+        
+            // Inicializamos un arreglo para clasificar las reservas por estado
+            $resultados = [
+                'reservasPendientes' => [],
+                'reservasAprobadas' => [],
+                'reservasPrestadas' => [],
+                'reservasDevueltas' => []
+            ];
+        
+            // Clasificamos las reservas según su estado
+            foreach ($reservas as $reserva) {
+                foreach ($reserva->detalles as $detalle) {
+                    switch ($detalle->estado) {
+                        case 'pendiente':
+                            $resultados['reservasPendientes'][] = $reserva;
+                            break;
+                        case 'aceptado':
+                            $resultados['reservasAprobadas'][] = $reserva;
+                            break;
+                        case 'prestado':
+                            $resultados['reservasPrestadas'][] = $reserva;
+                            break;
+                        case 'devuelto':
+                            $resultados['reservasDevueltas'][] = $reserva;
+                            break;
+                    }
+                }
+            }
+        
+            return $resultados;
+        }
+        
 
 
 

@@ -9,15 +9,17 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <!-- Contenido principal -->
-                    <!-- Referencias a las otras vistas importantes -->
-                    <div class="mt-6">
-                    <p>no se q poner inicio</p>
-                    </div>
+                    
+                    @if(auth()->user()->hasRole('profesor'))
+                        @include('dashboard.profesor')
+                    @elseif(auth()->user()->hasRole('asistente'))
+                        @include('dashboard.asistente')
+                    @elseif(auth()->user()->hasRole('admin'))
+                        @include('dashboard.admin')
+                    @else
+                        <p>No tienes un rol asignado</p>
+                    @endif
 
-                    <!-- Contenido estático de prueba -->
-                    <div class="mt-6">
-                    </div>
                 </div>
             </div>
         </div>

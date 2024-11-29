@@ -94,3 +94,45 @@
         </div>
     </div>
 </nav>
+
+<script src="{{ mix('js/app.js') }}"></script>
+
+
+<!-- <script>
+    const userId = {{ auth()->id() }};
+
+    Echo.private(`notifications.${userId}`)
+        .listen('NotificationEvent', (e) => {
+            console.log('Nueva notificación recibida:', e);
+
+            // Incrementar el contador de notificaciones
+            const notificationBadge = document.getElementById('notification-badge');
+            let count = parseInt(notificationBadge.textContent) || 0;
+            notificationBadge.textContent = count + 1;
+
+            // Actualizar la lista de notificaciones
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            const notificationHtml = `
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <p class="font-semibold text-gray-900 dark:text-gray-200">${e.message}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Enviado por: ${e.usuario_remitente}</p>
+                    <div class="mt-2 flex justify-between items-center">
+                        <form action="/notificaciones/marcar-leida/${e.notification_id}" method="POST">
+                            @csrf
+                            <button type="submit" class="text-xs bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded">
+                                Marcar como leída
+                            </button>
+                        </form>
+                        <a href="/reservas/${e.reserva_id}" 
+                           class="text-xs bg-green-500 hover:bg-green-700 text-white py-1 px-2 rounded ml-2">
+                            Ver Reserva
+                        </a>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">${e.time_since}</p>
+                </div>
+            `;
+
+            // Agregar la nueva notificación al principio del dropdown
+            notificationDropdown.insertAdjacentHTML('afterbegin', notificationHtml);
+        });
+</script> -->

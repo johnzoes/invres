@@ -13,11 +13,8 @@ class Salon extends Model
     protected $table = 'salones';
     public $timestamps = true;
 
-
     // Definimos los campos que se pueden asignar de forma masiva
     protected $fillable = ['nombre_salon'];
-
-
 
     // Relación: Un salón tiene muchos armarios
     public function armarios()
@@ -25,9 +22,9 @@ class Salon extends Model
         return $this->hasMany(Armario::class, 'id_salon', 'id');
     }
 
-    // Relación: Un salón tiene muchos asistentes
+    // Nueva Relación: Un salón tiene muchos asistentes (muchos a muchos)
     public function asistentes()
     {
-        return $this->hasMany(Asistente::class, 'id_salon', 'id');
+        return $this->belongsToMany(Asistente::class, 'asistente_salon', 'salon_id', 'asistente_id');
     }
 }

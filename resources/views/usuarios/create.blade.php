@@ -62,10 +62,11 @@
                         <!-- Rol -->
                         <div class="mt-4">
                             <x-input-label for="rol" :value="__('Rol')" />
-                            <select name="rol" id="rol" class="block mt-1 w-full">
-                                <option value="">Selecciona un rol</option>
+                            <select class="" id="rol">
+                                <option value="" class="bg-gray-700 border-b border-white">Selecciona un rol</option>
                                 @foreach($roles as $rol)
-                                    <option value="{{ $rol->name }}" {{ old('rol') == $rol->name ? 'selected' : '' }}>
+                                    <option value="{{ $rol->name }}" {{ old('rol') == $rol->name ? 'selected' : '' }} 
+                                        class="bg-gray-800 border-b border-white hover:bg-gray-600">
                                         {{ ucfirst($rol->name) }}
                                     </option>
                                 @endforeach
@@ -73,21 +74,33 @@
                             <x-input-error :messages="$errors->get('rol')" class="mt-2" />
                         </div>
 
+
                         <!-- Campos para Asistentes -->
                         <div id="asistente-fields" style="display: none;" class="mt-4">
+                            <!-- Selección interactiva de salones -->
                             <div>
-                                <x-input-label for="id_salon" :value="__('Salón')" />
-                                <select name="id_salon" id="id_salon" class="block mt-1 w-full">
-                                    <option value="">Selecciona un salón</option>
+                                <x-input-label for="salones" :value="__('Salones')" />
+                                <div id="salon-selector" class="mt-2">
                                     @foreach($salones as $salon)
-                                        <option value="{{ $salon->id }}" {{ old('id_salon') == $salon->id ? 'selected' : '' }}>
-                                            {{ $salon->nombre_salon }}
-                                        </option>
+                                        <label class="inline-flex items-center mt-2 ml-2">
+                                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600" name="salones[]" value="{{ $salon->id }}" {{ in_array($salon->id, old('salones', [])) ? 'checked' : '' }}>
+                                            <span class="ml-2 text-white">{{ $salon->nombre_salon }}</span>
+                                        </label>
                                     @endforeach
-                                </select>
-                                <x-input-error :messages="$errors->get('id_salon')" class="mt-2" />
+                                    <a href="{{ route('salones.create') }}" 
+                                        class="bg-black text-white font-bold py-1 px-4 rounded text-xs ml-4">
+                                            + Agregar salón
+                                        </a>
+
+                               </div>
+                                <small class="text-gray-500">Selecciona los salones que el asistente gestionará.</small>
+
+
+
+                                <x-input-error :messages="$errors->get('salones')" class="mt-2" />
                             </div>
 
+                            <!-- Turno -->
                             <div class="mt-4">
                                 <x-input-label for="turno" :value="__('Turno')" />
                                 <select name="turno" id="turno" class="block mt-1 w-full">

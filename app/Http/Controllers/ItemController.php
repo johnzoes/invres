@@ -19,15 +19,29 @@ class ItemController extends Controller
         // Verificar si es administrador
         if ($usuario->hasRole('admin')) {
             $items = Item::with('categoria', 'armario.salon')->get();
+
+
         } elseif ($usuario->hasRole('asistente')) {
-            // Obtener el asistente relacionado
-            $asistente = $usuario->asistente;
-            $items = Item::with('categoria', 'armario.salon')
-                ->whereHas('armario.salon', function ($query) use ($asistente) {
-                    $query->where('id', $asistente->id_salon);
-                })
-                ->get();
-        } else {
+
+
+         // Obtener el asistente relacionado
+         $asistente = $usuario->asistente;
+
+         // Obtener los IDs de los salones asignados al asistente
+         $salonIds = $asistente->salones->pluck('id')->toArray();
+ 
+         // Obtener los ítems relacionados a los salones asignados al asistente
+         $items = Item::with('categoria', 'armario.salon')
+             ->whereHas('armario.salon', function ($query) use ($salonIds) {
+                 $query->whereIn('id', $salonIds);
+             })
+             ->get();
+ 
+         // Obtener los salones asignados al asistente
+         $salones = Salon::whereIn('id', $salonIds)->get();
+        } 
+        
+        else {
             // Si no es administrador ni asistente, no tiene permisos
             return redirect()->back()->withErrors('No tienes permisos para ver esta página.');
         }

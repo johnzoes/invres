@@ -1,4 +1,3 @@
-
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -20,7 +19,12 @@
                     <p><strong>Rol:</strong> {{ $usuario->roles->pluck('name')->first() }}</p>
 
                     @if($usuario->roles->pluck('name')->first() === 'asistente' && $usuario->asistente)
-                        <p><strong>Salón:</strong> {{ $usuario->asistente->salon->nombre_salon }}</p>
+                        <p><strong>Salones:</strong></p>
+                        <ul>
+                            @foreach($usuario->asistente->salones as $salon)
+                                <li>- {{ $salon->nombre_salon }}</li>
+                            @endforeach
+                        </ul>
                         <p><strong>Turno:</strong> {{ ucfirst($usuario->asistente->turno) }}</p>
                     @endif
 
@@ -30,7 +34,7 @@
 
                     <div class="mt-6">
                         <a href="{{ route('usuarios.index') }}" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded">
-                            Volver a la Lista
+                        Volver a la Lista
                         </a>
                     </div>
                 </div>

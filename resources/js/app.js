@@ -1,14 +1,31 @@
-import 'select2/dist/css/select2.min.css';
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
+import * as jQuery from 'jquery';
+window.$ = window.jQuery = jQuery;
 
-import './bootstrap';
-import Alpine from 'alpinejs';
-import $ from 'jquery';
-import 'select2';
+window.Pusher = Pusher;
 
-window.Alpine = Alpine;
-Alpine.start();
+Pusher.logToConsole = true;
 
-// Inicializar Select2
-$(document).ready(function() {
-    $('#items').select2();
+window.Echo = new Echo({
+    broadcaster: 'pusher',
+    key: '5763113ca40d07fbd4c0',
+    cluster: 'us2', // Ajusta el cluster a tu configuración
+    forceTLS: true,
+
 });
+
+
+
+
+window.Echo.channel('notifications')
+
+    .listen('.NotificationEvent', (data) => {
+        console.log('Evento recibido en el canal:', data);
+    })
+    .on('pusher:subscription_succeeded', () => {
+        console.log('Suscripción exitosa al canal notifications');
+    })
+    .on('pusher:subscription_error', (status) => {
+        console.error('Error al suscribirse al canal notifications:', status);
+    });

@@ -14,6 +14,7 @@ use App\Models\UnidadDidactica;
 use App\Models\Item;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Events\NotificationEvent;
 
 
 class ReservaController extends Controller
@@ -51,7 +52,7 @@ class ReservaController extends Controller
                 ->get();
     // Retornar la vista con los datos necesarios para la creación de la reserva
     return view('reservas.create', compact('profesores', 'categorias', 'items'));
-}
+}   
 
 public function createtwo(Request $request)
 {
@@ -136,9 +137,10 @@ public function createtwo(Request $request)
                     $salonId = $item->armario->salon->id;
     
                     // Obtener el asistente responsable del salón y turno
-                    $asistente = Asistente::where('id_salon', $salonId)
-                                          ->where('turno', $request->turno)
-                                          ->first();
+                    $asistente = Asistente::whereHas('salones', function ($query) use ($salonId) {
+                        $query->where('salones.id', $salonId);
+                    })->where('turno', $request->turno)->first();
+                    
     
                     if ($asistente && !in_array($asistente->id, $asistentesNotificados) && $asistente->usuario) {
                         // Notificar al asistente
@@ -151,6 +153,11 @@ public function createtwo(Request $request)
                         ]));
                         $asistentesNotificados[] = $asistente->id;
                     }
+                    
+                     //event(new NotificationEvent("Nueva reserva de ítems en el salón $salonId", $asistente->usuario->id));
+                     event(new NotificationEvent('Este es un mensaje de prueba'));
+
+
                 }
             }
         }
@@ -160,34 +167,35 @@ public function createtwo(Request $request)
     
     
 
-    // Mostrar los detalles de una reserva específica
     public function show($id)
-{
-    // Obtener la reserva junto con sus relaciones
-    $reserva = Reserva::with('detalles.item.armario.salon', 'profesor.usuario', 'unidadDidactica')->find($id);
-
-    if (!$reserva) {
-        return redirect()->route('reservas.index')->with('error', 'Reserva no encontrada.');
+    {
+        // Obtener la reserva junto con sus relaciones
+        $reserva = Reserva::with('detalles.item.armario.salon', 'profesor.usuario', 'unidadDidactica')->find($id);
+    
+        if (!$reserva) {
+            return redirect()->route('reservas.index')->with('error', 'Reserva no encontrada.');
+        }
+    
+        // Obtener el usuario autenticado y verificar si es un asistente
+        $asistente = auth()->user()->asistente;
+    
+        if ($asistente) {
+            // Filtrar los detalles de la reserva que están bajo el control del asistente
+            $detallesFiltrados = $reserva->detalles->filter(function ($detalle) use ($asistente, $reserva) {
+                $salon = $detalle->item->armario->salon;
+    
+                // Verificar si el salón está entre los salones asignados al asistente y si el turno coincide
+                return $salon && $asistente->salones->contains('id', $salon->id) && $asistente->turno == $reserva->turno;
+            });
+        } else {
+            // Si no es asistente, no tiene permisos para gestionar ítems
+            $detallesFiltrados = collect();
+        }
+    
+        // Pasar solo los detalles filtrados a la vista
+        return view('reservas.show', compact('reserva', 'detallesFiltrados'));
     }
-
-    // Obtener el usuario autenticado y verificar si es un asistente
-    $asistente = auth()->user()->asistente;
-
-    if ($asistente) {
-        // Filtrar los detalles de la reserva que están bajo el control del asistente
-        $detallesFiltrados = $reserva->detalles->filter(function ($detalle) use ($asistente, $reserva) {
-            $salon = $detalle->item->armario->salon;
-            return $salon && $salon->id == $asistente->id_salon && $asistente->turno == $reserva->turno;
-        });
-    } else {
-        // Si no es asistente, no tiene permisos para gestionar ítems
-        $detallesFiltrados = collect();
-    }
-
-    // Pasar solo los detalles filtrados a la vista
-    return view('reservas.show', compact('reserva', 'detallesFiltrados'));
-}
-
+    
     
 
     // Eliminar una reserva

@@ -14,6 +14,10 @@ export default defineConfig({
         }),
     ],
 
+    define: {
+        'process.env': process.env,
+    },
+
     resolve: {
         alias: {
             '~select2': 'select2/dist/css/select2.min.css',

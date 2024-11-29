@@ -9,14 +9,16 @@ class AsistenteController extends Controller
     // Listar todos los asistentes
     public function index()
     {
-        $asistentes = Asistente::with('usuario', 'salon')->get();
+        // Incluye la relación con los salones (muchos a muchos)
+        $asistentes = Asistente::with('usuario', 'salones')->get();
         return view('asistentes.index', compact('asistentes'));
     }
 
     // Mostrar detalles de un asistente
     public function show($id_asistente)
     {
-        $asistente = Asistente::with('usuario', 'salon')->findOrFail($id_asistente);
+        // Incluye la relación con los salones (muchos a muchos)
+        $asistente = Asistente::with('usuario', 'salones')->findOrFail($id_asistente);
         return view('asistentes.show', compact('asistente'));
     }
 
@@ -24,12 +26,20 @@ class AsistenteController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'id_usuario' => 'required|exists:usuario,id_usuario',
-            'id_salon' => 'required|exists:salon,id_salon',
+            'id_usuario' => 'required|exists:usuarios,id',
+            'salones' => 'required|array', // Asegúrate de que sea un array de IDs de salones
+            'salones.*' => 'exists:salones,id', // Verifica que cada ID de salón exista
             'turno' => 'required|in:mañana,noche',
         ]);
 
-        Asistente::create($data);
+        // Crea el asistente
+        $asistente = Asistente::create([
+            'id_usuario' => $data['id_usuario'],
+            'turno' => $data['turno'],
+        ]);
+
+        // Asocia los salones al asistente
+        $asistente->salones()->attach($data['salones']);
 
         return redirect()->route('asistentes.index')->with('success', 'Asistente creado con éxito.');
     }
@@ -38,6 +48,10 @@ class AsistenteController extends Controller
     public function destroy($id_asistente)
     {
         $asistente = Asistente::findOrFail($id_asistente);
+
+        // Elimina las relaciones con los salones antes de eliminar el asistente
+        $asistente->salones()->detach();
+
         $asistente->delete();
 
         return redirect()->route('asistentes.index')->with('success', 'Asistente eliminado con éxito.');

@@ -5,6 +5,29 @@ body {
     font-family: 'Inter', sans-serif;
 }
 
+select {
+    background-color: transparent;
+    color: white;
+    border: 1px solid #2d3748;
+    padding: 8px;
+    border-radius: 4px;
+
+}
+
+option {
+    background-color: #1a202c; /* Fondo oscuro */
+    color: white; /* Texto blanco */
+    border-bottom: 1px solid white; /* Línea divisoria blanca */
+}
+
+option:hover,
+option:focus {
+    background-color: #2d3748; /* Fondo más claro al pasar el mouse */
+    color: white; /* Texto blanco */
+}
+
+
+
 @keyframes slideIn {
     0% {
         opacity: 0;

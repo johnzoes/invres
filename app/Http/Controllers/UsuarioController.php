@@ -34,7 +34,7 @@ class UsuarioController extends Controller
     public function show($id)
 {
     // Buscar el usuario con sus relaciones
-    $usuario = Usuario::with(['roles', 'profesor', 'asistente.salon'])->findOrFail($id);
+    $usuario = Usuario::with(['roles', 'profesor', 'asistente.salones'])->findOrFail($id);
 
     // Verifica el rol del usuario y muestra información según el caso
     return view('usuarios.show', compact('usuario'));
@@ -50,9 +50,10 @@ class UsuarioController extends Controller
     }
     
 
-    // Almacenar un nuevo usuario    // Almacenar un nuevo usuario
+    // Almacenar un nuevo usuario   
     public function store(Request $request)
     {
+        // Validar los datos básicos del usuario
         $data = $request->validate([
             'nombre_usuario' => 'required|string|max:50|unique:usuarios',
             'nombre' => 'required|string|max:50',
@@ -61,7 +62,8 @@ class UsuarioController extends Controller
             'password' => 'required|string|min:6',
             'rol' => 'required|in:admin,profesor,asistente',
         ]);
-
+    
+        // Crear el usuario
         $usuario = Usuario::create([
             'nombre_usuario' => $data['nombre_usuario'],
             'nombre' => $data['nombre'],
@@ -69,27 +71,35 @@ class UsuarioController extends Controller
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
-
+    
+        // Asignar el rol al usuario
         $usuario->assignRole($data['rol']);
-
+    
+        // Si es profesor, crear la relación con la tabla profesores
         if ($data['rol'] === 'profesor') {
             Profesor::create(['id_usuario' => $usuario->id]);
-        } elseif ($data['rol'] === 'asistente') {
+        }
+        // Si es asistente, crear la relación y asociar múltiples salones
+        elseif ($data['rol'] === 'asistente') {
             $request->validate([
-                'id_salon' => 'required|exists:salones,id',
+                'salones' => 'required|array', // Aseguramos que sea un array
+                'salones.*' => 'exists:salones,id', // Validamos que cada salón exista
                 'turno' => 'required|in:mañana,noche',
             ]);
-
-            Asistente::create([
+    
+            // Crear el asistente
+            $asistente = Asistente::create([
                 'id_usuario' => $usuario->id,
-                'id_salon' => $request->id_salon,
                 'turno' => $request->turno,
             ]);
+    
+            // Asociar los salones al asistente
+            $asistente->salones()->attach($request->salones);
         }
-
+    
         return redirect()->route('usuarios.index')->with('success', 'Usuario creado con éxito.');
     }
-
+    
 
    // Mostrar el formulario de edición de roles y datos del usuario
    public function edit($id)

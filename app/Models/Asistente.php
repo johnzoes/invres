@@ -11,21 +11,23 @@ class Asistente extends Model
 
     protected $table = 'asistentes';  // Nombre de la tabla en plural
 
-    protected $fillable = ['id_usuario', 'id_salon', 'turno'];
+    protected $fillable = ['id_usuario', 'turno'];
 
-  public $timestamps = false;
+    public $timestamps = false;
 
-
+    // Relación con el modelo Usuario
     public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'id_usuario', 'id');
     }
 
-    public function salon()
+    // Nueva relación muchos a muchos con el modelo Salon
+    public function salones()
     {
-        return $this->belongsTo(Salon::class, 'id_salon', 'id');
+        return $this->belongsToMany(Salon::class, 'asistente_salon', 'asistente_id', 'salon_id');
     }
 
+    // Relación con las notificaciones
     public function notificaciones()
     {
         return $this->hasMany(Notificacion::class, 'id_asistente', 'id');

@@ -66,24 +66,27 @@ class DashboardController extends Controller
         
         
         elseif ($usuario->hasRole('asistente')) {
+            
             // Obtener el asistente relacionado al usuario autenticado
             $asistente = $usuario->asistente;
-        
+
             if (!$asistente) {
                 return redirect()->back()->withErrors('No tienes un perfil de asistente asociado.');
             }
-        
-            // Obtener los detalles de las reservas que correspondan al salón y turno del asistente
-            $detalles = DetalleReservaItem::whereHas('item.armario.salon', function ($query) use ($asistente) {
-                $query->where('id', $asistente->id_salon); // Filtrar por el salón del asistente
-            })
-            ->whereHas('reserva', function ($query) use ($asistente) {
-                $query->where('turno', $asistente->turno); // Filtrar por el turno del asistente
-            })
-            ->with(['reserva.unidadDidactica', 'item', 'reserva.profesor.usuario'])
 
-            ->get();
-        
+            // Obtener los salones relacionados al asistente
+            $salonIds = $asistente->salones->pluck('id')->toArray();
+
+            // Obtener los detalles de las reservas que correspondan a los salones y turnos del asistente
+            $detalles = DetalleReservaItem::whereHas('item.armario.salon', function ($query) use ($salonIds) {
+                    $query->whereIn('id', $salonIds); // Filtrar por los salones asignados al asistente
+                })
+                ->whereHas('reserva', function ($query) use ($asistente) {
+                    $query->where('turno', $asistente->turno); // Filtrar por el turno del asistente
+                })
+                ->with(['reserva.unidadDidactica', 'item', 'reserva.profesor.usuario'])
+                ->get();
+
             // Reconstruir las reservas desde los detalles filtrados
             $reservas = $detalles->groupBy('id_reserva')->map(function ($detalles) {
                 $reserva = $detalles->first()->reserva;
@@ -91,13 +94,14 @@ class DashboardController extends Controller
                 return $reserva;
             })->values();
 
+            // Ordenar las reservas por fecha de creación de forma descendente
             $reservas = $reservas->sortByDesc(function ($reserva) {
                 return $reserva->created_at;
             });
-        
-        
+
             // Retornar la vista del asistente con las reservas filtradas
             return view('dashboard.asistente', ['reservas' => $reservas]);
+
         }
         
 

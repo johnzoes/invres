@@ -9,6 +9,7 @@ use App\Models\DetalleReservaItem;
 use App\Models\Asistente;
 use App\Models\Profesor;
 use App\Models\Categoria;
+use Illuminate\Support\Facades\Cache;
 
 use App\Models\UnidadDidactica;
 use App\Models\Item;
@@ -42,41 +43,41 @@ class ReservaController extends Controller
 
     // Mostrar el formulario para crear una nueva reserva
     public function create()
-{
-    // Traer los profesores, categorías y ítems relacionados
-    $profesores = Profesor::with('usuario')->get();
-    $categorias = Categoria::all();
+    {
+        $categorias = Categoria::with(['items' => function($query) {
+            $query->where('estado', 'like', 'disponible%')
+                  ->select('id', 'descripcion', 'cantidad', 'tipo', 'estado', 'marca', 'modelo', 'id_categoria');
+        }])->get();
+    
+        return view('reservas.create', compact('categorias'));
+    }
+    
 
-    $items = Item::with('categoria')
-                ->where('cantidad', '>', 0)
-                ->get();
-    // Retornar la vista con los datos necesarios para la creación de la reserva
-    return view('reservas.create', compact('profesores', 'categorias', 'items'));
-}   
-
-public function createtwo(Request $request)
-{
-    // Validar la solicitud
-    $request->validate([
-        'items' => 'required|array',
-        'items.*' => 'exists:items,id',
-        'cantidad.*' => 'required|integer|min:1',
-    ]);
-
-    // Guardar los ítems seleccionados y sus cantidades en la sesión
-    $itemsSeleccionados = [];
-    foreach ($request->items as $itemId) {
-        $itemsSeleccionados[$itemId] = $request->input('cantidad.' . $itemId);
+    public function createtwo(Request $request)
+    {
+        // Validar la solicitud
+        $request->validate([
+            'items' => 'required|array',
+            'items.*' => 'exists:categorias,id',
+            'cantidad' => 'required|array',
+            'cantidad.*' => 'required|integer|min:1',
+        ]);
+    
+        // Crear array de items seleccionados
+        $itemsSeleccionados = [];
+        foreach ($request->items as $categoriaId) {
+            $itemsSeleccionados[$categoriaId] = $request->input('cantidad.' . $categoriaId);
+        }
+    
+        // Almacenar en la sesión
+        session(['items' => $itemsSeleccionados]);
+    
+        // Cargar las unidades didácticas
+        $unidades_didacticas = UnidadDidactica::all();
+    
+        return view('reservas.create-two', compact('unidades_didacticas'));
     }
 
-    // Almacenar en la sesión
-    session(['items' => $itemsSeleccionados]);
-
-    // Cargar las unidades didácticas para la siguiente vista
-    $unidades_didacticas = UnidadDidactica::all();
-
-    return view('reservas.create-two', compact('unidades_didacticas'));
-}
 
 
 
@@ -85,8 +86,9 @@ public function createtwo(Request $request)
         // Validar la solicitud
         $request->validate([
             'id_unidad_didactica' => 'required|exists:unidades_didacticas,id',
-            'items' => 'required|array',
-            'items.*' => 'exists:items,id',
+            'categorias' => 'required|array',
+            'categorias.*' => 'exists:categorias,id',
+            'cantidad' => 'required|array',
             'cantidad.*' => 'required|integer|min:1',
             'turno' => 'required|in:mañana,noche',
         ]);
@@ -96,7 +98,8 @@ public function createtwo(Request $request)
         // Obtener el profesor autenticado
         $profesor = auth()->user()->profesor;
         if (!$profesor) {
-            return redirect()->route('reservas.create')->withErrors('No tienes un profesor asociado.');
+            return redirect()->route('reservas.create')
+                ->with('error', 'No tienes un profesor asociado.');
         }
     
         // Crear la reserva
@@ -107,62 +110,73 @@ public function createtwo(Request $request)
             'turno' => $request->turno,
         ]);
     
-        // Guardar los ítems y cantidades en la tabla detalle_reserva_item y notificar a los asistentes
-        foreach ($request->items as $itemId) {
-
-            // Obtener la cantidad de ítems solicitados
-            $cantidad = $request->input('cantidad.' . $itemId);
+        // Procesar items por categoría
+        foreach ($request->categorias as $categoriaId) {
+            $cantidadSolicitada = $request->input('cantidad.' . $categoriaId);
+            
+            // Obtener items de la categoría
+            $items = Item::where('id_categoria', $categoriaId)
+                ->where('estado', 'disponible')
+                ->get();
     
-            // Obtener el ítem desde la base de datos
-            $item = Item::find($itemId);
-            if ($item) {
-                // Verificar si hay suficiente cantidad en el inventario
-                if ($item->cantidad < $cantidad) {
-                    return redirect()->route('reservas.create')->withErrors("No hay suficiente stock para el ítem: {$item->descripcion}");
+            $cantidadRestante = $cantidadSolicitada;
+            
+            foreach ($items as $item) {
+                if ($cantidadRestante <= 0) break;
+    
+                if ($item->tipo === 'unidad') {
+                    // Para items unitarios, crear un detalle por cada unidad
+                    DetalleReservaItem::create([
+                        'id_reserva' => $reserva->id,
+                        'id_item' => $item->id,
+                        'fecha_reserva' => now(),
+                        'hora_reserva' => now(),
+                        'cantidad_reservada' => 1,
+                        'estado' => 'pendiente',
+                    ]);
+                    $cantidadRestante--;
+                } else {
+                    // Para items tipo paquete
+                    $cantidadAReservar = min($cantidadRestante, $item->cantidad);
+                    DetalleReservaItem::create([
+                        'id_reserva' => $reserva->id,
+                        'id_item' => $item->id,
+                        'fecha_reserva' => now(),
+                        'hora_reserva' => now(),
+                        'cantidad_reservada' => $cantidadAReservar,
+                        'estado' => 'pendiente',
+                    ]);
+                    $cantidadRestante -= $cantidadAReservar;
                 }
     
-    
-                // Crear el detalle de la reserva
-                $detalleReserva = DetalleReservaItem::create([
-                    'id_reserva' => $reserva->id,
-                    'id_item' => $itemId,
-                    'fecha_reserva' => now(),
-                    'hora_reserva' => now(),
-                    'cantidad_reservada' => $cantidad,
-                    'estado' => 'pendiente',
-                ]);
-    
-                // Obtener el armario del ítem para notificar al asistente
+                // Notificar al asistente del salón
                 if ($item->armario && $item->armario->salon) {
                     $salonId = $item->armario->salon->id;
-    
-                    // Obtener el asistente responsable del salón y turno
                     $asistente = Asistente::whereHas('salones', function ($query) use ($salonId) {
                         $query->where('salones.id', $salonId);
                     })->where('turno', $request->turno)->first();
-                    
     
                     if ($asistente && !in_array($asistente->id, $asistentesNotificados) && $asistente->usuario) {
-                        // Notificar al asistente
                         $asistente->usuario->notify(new NotificacionReserva([
-                            'mensaje' => "Nueva reserva de ítems en el salón $salonId",
+                            'mensaje' => "Nueva reserva de items en el salón {$item->armario->salon->nombre_salon}",
                             'reserva_id' => $reserva->id,
                             'usuario_remitente' => auth()->user()->nombre,
                             'usuario_destinatario' => $asistente->usuario->nombre,
                             'turno' => $request->turno,
                         ]));
+    
                         $asistentesNotificados[] = $asistente->id;
+                        event(new NotificationEvent($reserva));
                     }
-                    
-                     //event(new NotificationEvent("Nueva reserva de ítems en el salón $salonId", $asistente->usuario->id));
-                     event(new NotificationEvent('Este es un mensaje de prueba'));
-
-
                 }
             }
         }
     
-        return redirect()->route('reservas.index')->with('success', 'Reserva creada con éxito y notificaciones enviadas a los asistentes.');
+        // Limpiar la sesión de items
+        session()->forget('items');
+    
+        return redirect()->route('reservas.index')
+            ->with('success', 'Reserva creada exitosamente');
     }
     
     

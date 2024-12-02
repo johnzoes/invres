@@ -7,8 +7,10 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Broadcasting\Channel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class NotificacionReserva extends Notification implements ShouldQueue
+class NotificacionReserva extends Notification implements ShouldBroadcast
 {
     use Queueable;
 
@@ -33,7 +35,6 @@ class NotificacionReserva extends Notification implements ShouldQueue
             'usuario_destinatario' => $this->notificationData['usuario_destinatario'] ?? 'Usuario'
         ];
     }
-    
 
     public function toMail($notifiable)
     {
@@ -46,6 +47,7 @@ class NotificacionReserva extends Notification implements ShouldQueue
             ->line('Gracias por usar nuestro sistema.');
     }
 
+    // Método para el broadcasting
     public function toBroadcast($notifiable)
     {
         return new BroadcastMessage([
@@ -54,5 +56,17 @@ class NotificacionReserva extends Notification implements ShouldQueue
             'usuario_remitente' => $this->notificationData['usuario_remitente'],
             'usuario_destinatario' => $this->notificationData['usuario_destinatario'],
         ]);
+    }
+
+    // Especifica en qué canal se transmitirá el evento
+    public function broadcastOn()
+    {
+        return new Channel('reservas.' . $this->notificationData['reserva_id']);
+    }
+
+    // Especifica un nombre para el evento de broadcasting
+    public function broadcastAs()
+    {
+        return 'notificacion-reserva';
     }
 }

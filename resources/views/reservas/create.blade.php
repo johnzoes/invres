@@ -1,57 +1,76 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight text-center">
-            {{ __('Crear Reserva') }}
-        </h2>
-    </x-slot>
+    <div class="min-h-screen bg-gray-900">
+        <div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-light text-white text-center mb-12">Crear Nueva Reserva</h1>
 
-    <div class="flex flex-col ml-64 py-12">
-        <div class="w-full max-w-5xl mx-auto sm:px-6 lg:px-8">
-            
-            <!-- Formulario para enviar al controlador -->
-            <form action="{{ route('reservas.createtwo') }}" method="POST">
+            <form action="{{ route('reservas.createtwo') }}" method="POST" class="space-y-8">
                 @csrf
                 
-                <!-- Campo de Búsqueda y Filtro -->
-                <div class="mb-6">
-                    <label for="search" class="block text-sm font-medium text-gray-300">Buscar Ítem:</label>
-                    <input type="text" id="search" class="mt-2 block w-full bg-gray-700 text-white border-gray-600 rounded-lg shadow-sm p-2" placeholder="Buscar por descripción..." oninput="filterItems()">
-                </div>
+                <!-- Barra de búsqueda y filtros -->
+                <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                    <!-- Campo de Búsqueda -->
+                    <div class="flex-1">
+                        <input type="text" 
+                               id="search" 
+                               class="w-full bg-gray-800/50 text-white border-0 rounded-xl px-6 py-4 focus:ring-2 focus:ring-blue-500 transition-all placeholder-gray-500 backdrop-blur-sm" 
+                               placeholder="Buscar ítem..."
+                               oninput="filterItems()">
+                    </div>
 
-                <!-- Selección de Categoría -->
-                <div class="mb-6">
-                    <label for="categoria" class="block text-sm font-medium text-gray-300">Filtrar por Categoría:</label>
-                    <select id="categoria" class="mt-2 block w-full bg-gray-700 text-white border-gray-600 rounded-lg shadow-sm" onchange="filterItems()">
-                        <option value="all">Todas las Categorías</option>
+                    <!-- Selector de Categoría -->
+                    <select id="categoria" 
+                            class="bg-gray-800/50 text-white border-0 rounded-xl px-6 py-4 focus:ring-2 focus:ring-blue-500 transition-all backdrop-blur-sm"
+                            onchange="filterItems()">
+                        <option value="all">Todas las categorías</option>
                         @foreach ($categorias as $categoria)
                             <option value="{{ $categoria->id }}">{{ $categoria->nombre_categoria }}</option>
                         @endforeach
                     </select>
                 </div>
 
-                <!-- Dropdown para seleccionar ítems -->
-                <div id="dropdown" class="relative bg-gray-800 text-white w-full mt-2 rounded-lg shadow-lg max-h-96 overflow-y-auto z-10">
-                    @foreach ($items as $item)
-                        <div class="p-4 hover:bg-gray-600 cursor-pointer item flex items-center gap-4" 
-                            data-categoria="{{ $item->id_categoria }}" 
-                            data-descripcion="{{ strtolower($item->descripcion) }}"
-                            onclick="selectItem('{{ $item->id }}', '{{ $item->descripcion }}', '{{ $item->cantidad }}')">
-                            <img src="{{ Storage::url($item->imagen) }}" alt="{{ $item->descripcion }}" class="w-12 h-12 object-cover rounded">
-                            <div>
-                                <p>{{ $item->descripcion }}</p>
-                                <p class="text-sm text-gray-400">Cantidad: {{ $item->cantidad }}</p>
-                            </div>
-                        </div>
-                    @endforeach
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+
+
+    @foreach ($categorias as $categoria)
+        @if($categoria->items->count() > 0)
+            <div class="item bg-gray-800/50 rounded-2xl p-4 hover:bg-gray-700/50 transition-all cursor-pointer backdrop-blur-sm"
+                 data-categoria="{{ $categoria->id }}" 
+                 data-descripcion="{{ strtolower($categoria->nombre_categoria) }}"
+                 onclick="selectItem(
+                    '{{ $categoria->id }}', 
+                    '{{ $categoria->nombre_categoria }}', 
+                    '{{ $categoria->items->sum('cantidad') }}'
+                 )">
+                
+                <div class="p-4">
+                    <h3 class="text-white font-medium mb-2">{{ $categoria->nombre_categoria }}</h3>
+                    <div class="text-gray-400 text-sm">
+                        @foreach($categoria->items->groupBy('tipo') as $tipo => $items)
+                            <p class="mb-1">
+                                {{ $tipo === 'unidad' ? 'Unidades' : 'En stock' }}: 
+                                {{ $items->sum('cantidad') }}
+                            </p>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
+</div>
+
+
+
+                <!-- Items seleccionados -->
+                <div class="space-y-4 mb-8">
+                    <h2 class="text-xl font-light text-white mb-4">Items Seleccionados</h2>
+                    <div id="selected-items-container" class="space-y-3"></div>
                 </div>
 
-                <!-- Contenedor para los ítems seleccionados -->
-                <div id="selected-items-container" class="mt-6 flex flex-wrap gap-4"></div>
-
-                <!-- Botón para enviar el formulario -->
-                <div class="mt-6">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">
-                        Siguiente: Seleccionar Unidad Didáctica
+                <!-- Botón de envío -->
+                <div class="flex justify-end">
+                    <button type="submit" 
+                            class="bg-blue-500 text-white px-8 py-3 rounded-xl hover:bg-blue-600 transition-all font-medium">
+                        Continuar
                     </button>
                 </div>
             </form>
@@ -59,50 +78,53 @@
     </div>
 
     <script>
-        // Función para seleccionar un ítem y agregarlo al contenedor
         function selectItem(id, description, maxQuantity) {
             const container = document.getElementById('selected-items-container');
-
-            // Verificar si el ítem ya está agregado
             if (document.getElementById('item-' + id)) return;
 
             const chipHtml = `
-                <div id="item-${id}" class="chip flex items-center bg-gray-700 border border-gray-600 p-3 rounded-lg shadow-sm mb-2 w-full">
-                    <span class="text-white font-semibold mr-2">${description}</span>
-                    <input type="hidden" name="items[]" value="${id}">
-                    <input type="number" name="cantidad[${id}]" min="1" max="${maxQuantity}" class="form-input w-24 text-center bg-gray-800 text-white border-gray-600 rounded-lg mx-2" placeholder="Cantidad" required>
-                    <button type="button" class="ml-2 text-red-500 hover:text-red-700 font-bold" onclick="removeItem(${id})">&times;</button>
+                <div id="item-${id}" class="flex items-center justify-between bg-gray-800/50 rounded-xl p-4 backdrop-blur-sm">
+                    <span class="text-white font-medium">${description}</span>
+                    <div class="flex items-center gap-4">
+                        <input type="hidden" name="items[]" value="${id}">
+                        <input type="number" 
+                               name="cantidad[${id}]" 
+                               min="1" 
+                               max="${maxQuantity}" 
+                               class="w-20 bg-gray-700 text-white border-0 rounded-lg px-3 py-2 text-center" 
+                               placeholder="Cant."
+                               required>
+                        <button type="button" 
+                                class="text-gray-400 hover:text-red-500 transition-colors" 
+                                onclick="removeItem(${id})">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>`;
             
             container.insertAdjacentHTML('beforeend', chipHtml);
         }
 
-        // Función para filtrar ítems por categoría y descripción
         function filterItems() {
             const searchInput = document.getElementById('search').value.toLowerCase();
             const selectedCategory = document.getElementById('categoria').value;
-            const items = document.querySelectorAll('#dropdown .item');
+            const items = document.querySelectorAll('.item');
 
             items.forEach(item => {
                 const itemCategory = item.getAttribute('data-categoria');
                 const itemDescription = item.getAttribute('data-descripcion');
 
-                // Mostrar el ítem si coincide con la categoría o la búsqueda
                 const matchesCategory = selectedCategory === 'all' || itemCategory === selectedCategory;
                 const matchesSearch = itemDescription.includes(searchInput);
 
-                if (matchesCategory && matchesSearch) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
+                item.style.display = matchesCategory && matchesSearch ? 'block' : 'none';
             });
         }
 
-        // Función para eliminar un ítem seleccionado
         function removeItem(id) {
-            const itemElement = document.getElementById('item-' + id);
-            if (itemElement) itemElement.remove();
+            document.getElementById('item-' + id)?.remove();
         }
     </script>
 </x-app-layout>

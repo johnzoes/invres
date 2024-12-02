@@ -7,12 +7,17 @@ use Illuminate\Support\ServiceProvider;
 
 class BroadcastServiceProvider extends ServiceProvider
 {
+    /**
+     * Bootstrap the application services for broadcasting.
+     *
+     * @return void
+     */
     public function boot()
     {
-        // Registrar rutas para broadcasting
+        // Registrar rutas de broadcasting sin autenticación
         Broadcast::routes();
 
-        // Cargar los canales definidos en routes/channels.php
+        // Cargar las definiciones de los canales desde routes/channels.php
         require base_path('routes/channels.php');
     }
 }

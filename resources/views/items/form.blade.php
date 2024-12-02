@@ -80,10 +80,12 @@
                     <div class="mb-6">
                         <label for="id_categoria" class="block text-sm font-medium text-gray-300">Categoría:</label>
                         <select name="id_categoria" id="id_categoria" class="block w-full bg-gray-700 text-white border-gray-600 rounded-lg mt-2 p-3">
-                            @foreach($categorias as $categoria)
-                                <option value="{{ $categoria->id }}" {{ (old('id_categoria', $item->id_categoria ?? '') == $categoria->id) ? 'selected' : '' }}>{{ $categoria->nombre_categoria }}</option>
-                            @endforeach
-                        </select>
+                        @foreach($categorias as $categoria)
+                            <option value="{{ $categoria->id }}" 
+                                {{ (old('id_categoria', $item->id_categoria ?? $categoriaPreseleccionada ?? '') == $categoria->id) ? 'selected' : '' }}>
+                                {{ $categoria->nombre_categoria }}
+                            </option>
+    @endforeach
                     </div>
 
                     <!-- Salón -->

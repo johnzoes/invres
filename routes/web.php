@@ -8,9 +8,15 @@ use App\Http\Controllers\HistorialEstadoController;
 
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CategoriaController;
+
+use App\Http\Controllers\NotificationController;
+
 use App\Models\Salon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Events\NotificationEvent;
+use Illuminate\Support\Facades\Cache;
 
 // Rutas que requieren autenticación
 Route::middleware('auth')->group(function () {
@@ -21,6 +27,9 @@ Route::middleware('auth')->group(function () {
     ->name('historial.show');
 
     Route::get('/salones/{id}/armarios', [SalonController::class, 'getArmariosBySalon'])->name('salones.armarios');
+
+
+
     
 // Rutas relacionadas con el perfil del usuario autenticado
 Route::middleware(['auth'])->prefix('profile')->name('profile.')->group(function () {
@@ -35,6 +44,7 @@ Route::middleware(['auth'])->prefix('profile')->name('profile.')->group(function
 
     // Rutas para la gestión de ítems
     Route::prefix('items')->name('items.')->group(function () {
+Route::get('/categoria/{categoria}', [ItemController::class, 'index'])->name('items.categoria');
         Route::get('/search', [ItemController::class, 'search'])->name('search');
         Route::get('/', [ItemController::class, 'index'])->name('index')->middleware('permission:ver items');
         Route::get('/create', [ItemController::class, 'create'])->name('create')->middleware('permission:crear items');
@@ -88,11 +98,28 @@ Route::prefix('armarios')->name('armarios.')->group(function () {
         
     });
 
+    // Dentro del grupo de rutas autenticadas, añade:
+Route::prefix('categorias')->name('categorias.')->group(function () {
+    Route::get('/', [CategoriaController::class, 'index'])->name('index')->middleware('permission:ver categorias');
+    Route::get('/create', [CategoriaController::class, 'create'])->name('create')->middleware('permission:crear categorias');
+    Route::post('/', [CategoriaController::class, 'store'])->name('store')->middleware('permission:crear categorias');
+    Route::get('/{categoria}/edit', [CategoriaController::class, 'edit'])->name('edit')->middleware('permission:editar categorias');
+    Route::put('/{categoria}', [CategoriaController::class, 'update'])->name('update')->middleware('permission:editar categorias');
+    Route::delete('/{categoria}', [CategoriaController::class, 'destroy'])->name('destroy')->middleware('permission:eliminar categorias');
+});
+
     Route::get('/reservas/{id}/pdf', [ReservaController::class, 'generarPDF'])->name('reservas.pdf');
 
 
 
+   // web.php (rutas de la aplicación)
+Route::middleware(['auth'])->get('/notificaciones/unread-count', function () {
+    return response()->json([
+        'unread_count' => auth()->user()->unreadNotifications->count()
+    ]);
+});
 
+    
     Route::middleware(['auth', 'permission:ver notificaciones'])
     ->prefix('notificaciones')
     ->name('notificaciones.')
@@ -117,7 +144,15 @@ Route::prefix('armarios')->name('armarios.')->group(function () {
         })->name('marcarLeida');
     });
 
+
+
+
+    
+
 });
+
+
+
 
 // Cargar las rutas de autenticación
 require __DIR__.'/auth.php';

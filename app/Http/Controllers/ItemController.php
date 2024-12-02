@@ -11,44 +11,44 @@ use Illuminate\Http\Request;
 class ItemController extends Controller
 {
     // Listar todos los ítems
-    public function index()
+    public function index(Request $request)
     {
-        // Obtener el usuario autenticado
         $usuario = auth()->user();
-    
-        // Verificar si es administrador
-        if ($usuario->hasRole('admin')) {
-            $items = Item::with('categoria', 'armario.salon')->get();
-
-
-        } elseif ($usuario->hasRole('asistente')) {
-
-
-         // Obtener el asistente relacionado
-         $asistente = $usuario->asistente;
-
-         // Obtener los IDs de los salones asignados al asistente
-         $salonIds = $asistente->salones->pluck('id')->toArray();
- 
-         // Obtener los ítems relacionados a los salones asignados al asistente
-         $items = Item::with('categoria', 'armario.salon')
-             ->whereHas('armario.salon', function ($query) use ($salonIds) {
-                 $query->whereIn('id', $salonIds);
-             })
-             ->get();
- 
-         // Obtener los salones asignados al asistente
-         $salones = Salon::whereIn('id', $salonIds)->get();
-        } 
+        $query = Item::with('categoria', 'armario.salon');
         
+        // Si hay una categoría seleccionada, filtramos por ella
+        $categoriaActual = null;
+        if ($request->has('categoria')) {
+            $query->where('id_categoria', $request->categoria);
+            $categoriaActual = Categoria::findOrFail($request->categoria);
+        }
+    
+        // Filtrar según el rol del usuario
+        if ($usuario->hasRole('admin')) {
+            $items = $query->get();
+        } 
+        elseif ($usuario->hasRole('asistente')) {
+            $asistente = $usuario->asistente;
+            $salonIds = $asistente->salones->pluck('id')->toArray();
+            
+            $items = $query->whereHas('armario.salon', function ($query) use ($salonIds) {
+                $query->whereIn('id', $salonIds);
+            })->get();
+            
+            $salones = Salon::whereIn('id', $salonIds)->get();
+        } 
         else {
-            // Si no es administrador ni asistente, no tiene permisos
             return redirect()->back()->withErrors('No tienes permisos para ver esta página.');
         }
     
-        // Retornar la vista con los ítems obtenidos
-        return view('items.index', compact('items'));
+        return view('items.index', [
+            'items' => $items,
+            'categoriaActual' => $categoriaActual,
+            'salones' => $salones ?? null
+        ]);
     }
+
+
 
     public function search(Request $request)
     {
@@ -75,12 +75,14 @@ class ItemController extends Controller
     }
 
     // Mostrar el formulario de creación de un nuevo ítem
-    public function create()
+    public function create(Request $request)
     {
         $salones = Salon::all(); 
         $categorias = Categoria::all();
         $armarios = Armario::all();
-        return view('items.form', compact('categorias', 'armarios', 'salones'));
+        $categoriaPreseleccionada = $request->categoria ?? null;
+
+        return view('items.form', compact('categorias', 'armarios', 'salones', 'categoriaPreseleccionada'));
     }
 
 

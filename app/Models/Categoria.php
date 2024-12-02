@@ -11,7 +11,8 @@ class Categoria extends Model
 
     protected $table = 'categorias';  // Nombre de la tabla en plural
 
-    protected $fillable = ['nombre_categoria'];
+    protected $fillable = ['nombre_categoria','imagen'
+];
 
     public function items()
     {

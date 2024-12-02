@@ -49,6 +49,11 @@ class RolesAndPermissionsSeeder extends Seeder
             'rechazar reservas',
             'prestar ítems',
             'devolver ítems',
+
+            'ver categorias',
+            'crear categorias',
+            'editar categorias',
+            'eliminar categorias',
         ];
 
         // Crear los permisos en la base de datos si no existen
@@ -102,6 +107,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'rechazar reservas',
             'prestar ítems',
             'devolver ítems',
+
+
+            'ver categorias',
+            'crear categorias',
+            'editar categorias',
+            'eliminar categorias',
             
             // Notificaciones
             'ver notificaciones',

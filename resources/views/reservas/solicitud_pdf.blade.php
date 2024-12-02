@@ -23,7 +23,7 @@
     <h2 style="text-align: center;">SOLICITUD DE MATERIALES, ACCESORIOS Y EQUIPOS</h2>
     <p><strong>Docente:</strong> {{ $profesor->usuario->nombre }}</p>
     <p><strong>Unidad didáctica:</strong> {{ $reserva->unidadDidactica->nombre }}</p>
-    <p><strong>Turno:</strong> {{ ucfirst($reserva->turno) }} <strong>Semestre:</strong> {{ $reserva->semestre }} <strong>Ambiente:</strong> {{ $reserva->ambiente }}</p>
+    <p><strong>Turno:</strong> {{ ucfirst($reserva->turno) }} <strong>Semestre:</strong> {{ $reserva->unidadDidactica->ciclo }} <strong>Ambiente:</strong> {{ $reserva->ambiente }}</p>
     <p><strong>Fecha:</strong> {{ $reserva->fecha_prestamo }} <strong>Hora:</strong> {{ now()->format('H:i') }} <strong>N° Grupos:</strong> {{ $reserva->numero_grupos }}</p>
 
     <table>

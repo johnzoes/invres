@@ -25,19 +25,44 @@ class ReservaController extends Controller
     public function index()
     {
         $user = auth()->user();
-        // Si el usuario es un profesor, accedemos a sus reservas
+        $query = Reserva::with(['profesor.usuario', 'unidadDidactica', 'detalles.historialEstados']);
+    
+        // Filtrar según el rol
         if ($user->hasRole('profesor')) {
-            $profesor = $user->profesor;
-            $reservas = $profesor ? $profesor->reservas : [];
-        } else {
-            // Si es admin o asistente, mostramos todas las reservas
-            $reservas = Reserva::all();
+            $query->whereHas('profesor.usuario', function ($q) use ($user) {
+                $q->where('id', $user->id);
+            });
+        } elseif ($user->hasRole('asistente')) {
+            $salonIds = $user->asistente->salones->pluck('id');
+            $query->whereHas('detalles.item.armario.salon', function ($q) use ($salonIds) {
+                $q->whereIn('id_salon', $salonIds);
+            });
         }
     
-        return view('reservas.index', compact('reservas'));
+        $reservas = $query->latest()->get();
+    
+        // Obtener estadísticas basadas en los estados de los detalles
+        $stats = [
+            'total' => $reservas->count(),
+            'pendientes' => $reservas->filter(function($reserva) {
+                return $reserva->detalles->contains(function($detalle) {
+                    return $detalle->estado === 'pendiente';
+                });
+            })->count(),
+            'aceptados' => $reservas->filter(function($reserva) {
+                return $reserva->detalles->contains(function($detalle) {
+                    return $detalle->estado === 'aceptado';
+                });
+            })->count(),
+            'rechazados' => $reservas->filter(function($reserva) {
+                return $reserva->detalles->contains(function($detalle) {
+                    return $detalle->estado === 'rechazado';
+                });
+            })->count()
+        ];
+    
+        return view('reservas.index', compact('reservas', 'stats'));
     }
-
-
     
     
 

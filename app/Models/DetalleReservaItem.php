@@ -30,4 +30,23 @@ class DetalleReservaItem extends Model
     {
         return $this->belongsTo(Item::class, 'id_item', 'id');
     }
+
+    // Relación: Un detalle de reserva tiene múltiples registros en el historial
+    public function historialEstados()
+    {
+        return $this->hasMany(HistorialEstadoItem::class, 'id_detalle_reserva_item', 'id');
+    }
+
+    // Método para obtener el último estado del historial
+    public function ultimoEstado()
+    {
+        return $this->historialEstados()->latest('fecha_estado')->first();
+    }
+
+    // Helper method para verificar el estado actual
+    public function tieneEstado($estado)
+    {
+        return $this->estado === $estado;
+    }
+
 }

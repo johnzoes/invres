@@ -39,7 +39,7 @@ class NotificacionReserva extends Notification implements ShouldBroadcast
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->from('santos31zorrilla@gmail.com', 'Invres System')
+            ->from('areaelectronicasystem@gmail.com', 'Invres System')
             ->subject('Actualización de Estado de Reserva')
             ->greeting('Hola, ' . $notifiable->nombre)
             ->line($this->notificationData['mensaje'])

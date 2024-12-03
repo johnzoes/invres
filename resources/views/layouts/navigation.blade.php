@@ -17,9 +17,9 @@
     <div class="hidden md:flex md:flex-col md:fixed md:h-full md:bg-white md:dark:bg-gray-800 md:border-r md:border-gray-100 md:dark:border-gray-700 md:w-64 md:overflow-y-auto">
     <div class="h-full flex flex-col">
 
-<!-- Logo -->
-<div class="p-4">
-</div>
+      <!-- Logo -->
+        <div class="p-4">
+        </div>
 
 <!-- Enlaces de Navegación -->
 <div class="flex-1 flex flex-col mt-5">
@@ -27,7 +27,7 @@
 
  <!-- Botón de Notificaciones -->
  <div class="relative mb-4">
-        <button id="notificationButton" class="relative flex items-center">
+        <button id="notificationButton"  @click="toggleNotifications()" class="relative flex items-center">
             <svg class="h-5 w-5 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
@@ -126,44 +126,34 @@
             </button>
             
             <!-- Botón de notificaciones móvil -->
-            <button id="mobileNotificationButton" 
-                    @click="showNotifications = !showNotifications; isMobileMenuOpen = false"
-                    class="relative">
-                <svg class="h-6 w-6 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                @if(isset($notificaciones) && $notificaciones->count() > 0)
-                    <span class="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500 px-2 text-white text-xs">
-                        {{ $notificaciones->count() }}
-                    </span>
-                @endif
-            </button>
+                <button id="mobileNotificationButton"
+            @click="showNotifications = !showNotifications; isMobileMenuOpen = false"
+            class="relative md:hidden">
+        <svg class="h-6 w-6 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        @if(isset($notificaciones) && $notificaciones->count() > 0)
+            <span class="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500 px-2 text-white text-xs">
+                {{ $notificaciones->count() }}
+            </span>
+        @endif
+    </button>
         </div>
     </div>
 
-    <!-- Panel de notificaciones móvil -->
-    <div x-show="showNotifications" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform translate-y-full"
-         x-transition:enter-end="opacity-100 transform translate-y-0"
-         x-transition:leave="transition ease-in duration-300"
-         x-transition:leave-start="opacity-100 transform translate-y-0"
-         x-transition:leave-end="opacity-0 transform translate-y-full"
-         @click.away="showNotifications = false"
-         class="fixed inset-x-0 bottom-0 z-50 md:hidden bg-white dark:bg-gray-800 rounded-t-xl shadow-lg">
-        <div class="relative max-h-[80vh] overflow-y-auto">
-            <!-- Botón de cerrar -->
-            <button @click="showNotifications = false" 
-                    class="absolute right-4 top-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-            
-            <!-- Contenido de notificaciones -->
-            @include('components.notification-dropdown')
-        </div>
-    </div>
+<!-- Panel móvil de notificaciones -->
+<div x-show="showNotifications"
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0 transform translate-y-full"
+     x-transition:enter-end="opacity-100 transform translate-y-0"
+     x-transition:leave="transition ease-in duration-300"
+     x-transition:leave-start="opacity-100 transform translate-y-0"
+     x-transition:leave-end="opacity-0 transform translate-y-full"
+     @click.away="showNotifications = false"
+     class="fixed inset-x-0 bottom-0 z-50 md:hidden">
+    @include('components.notification-dropdown', ['isMobile' => true])
+</div>
+
 
     <!-- Menú móvil slide-out -->
     <div x-show="isMobileMenuOpen" 
@@ -278,52 +268,10 @@
 </div>
 </div>    </div>
 
-    <!-- Overlay modificado -->
-    <div x-show="isMobileMenuOpen || showNotifications" 
-         x-transition:enter="transition-opacity ease-linear duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition-opacity ease-linear duration-300"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         @click="isMobileMenuOpen = false; showNotifications = false"
-         class="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden">
-    </div>
+
 </nav>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const notificationButton = document.getElementById('notificationButton');
-        const mobileNotificationButton = document.getElementById('mobileNotificationButton');
-        const notificationDropdown = document.getElementById('notificationDropdown');
-
-        function closeAllMobileMenus() {
-            Alpine.store('isMobileMenuOpen', false);
-            Alpine.store('showNotifications', false);
-            document.body.style.overflow = 'auto';
-        }
-
-        // Cerrar al hacer clic fuera
-        document.addEventListener('click', function(event) {
-            const isClickInside = notificationButton?.contains(event.target) || 
-                                mobileNotificationButton?.contains(event.target) || 
-                                notificationDropdown?.contains(event.target);
-
-            if (!isClickInside) {
-                closeAllMobileMenus();
-            }
-        });
-
-        // Cerrar al cambiar de tamaño de ventana
-        window.addEventListener('resize', function() {
-            if (window.innerWidth >= 768) {
-                closeAllMobileMenus();
-            }
-        });
-    });
-
-
-
     // Función para obtener el conteo de notificaciones no leídas   
 
     function fetchUnreadNotificationsCount() {
@@ -373,6 +321,8 @@
     // Ejecutar inmediatamente al cargar la página
     fetchUnreadNotificationsCount();
 
+
+    
 
 
 

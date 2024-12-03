@@ -1,182 +1,117 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-200 dark:text-gray-200 leading-tight text-center">
-            {{ isset($item) ? 'Editar Ítem' : 'Agregar Nuevo Ítem' }}
-        </h2>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between">
+                <h2 class="font-semibold text-xl text-gray-200 leading-tight">
+                    {{ __('Gestión de Ítems') }}
+                </h2>
+                @can('crear items')
+                    <a href="{{ route('items.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                        Agregar Nuevo Ítem
+                    </a>
+                @endcan
+            </div>
+        </div>
     </x-slot>
 
-    <div class="flex flex-col py-12">
-        <div class="w-full max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-gray-800 rounded-lg shadow-lg p-8">
-                
-                <h1 class="text-2xl font-bold text-white mb-6">{{ isset($item) ? 'Editar Ítem' : 'Agregar Nuevo Ítem' }}</h1>
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <!-- Tabs de navegación -->
+            <div class="mb-6 border-b border-gray-700">
+                <div class="flex space-x-8">
+                    <a href="{{ route('items.index', ['view' => 'all']) }}" 
+                       class="pb-4 px-1 border-b-2 {{ !$showMyItems ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-300' }} transition-colors duration-200">
+                        Todos los Items
+                    </a>
+                    <a href="{{ route('items.index', ['view' => 'my']) }}" 
+                       class="pb-4 px-1 border-b-2 {{ $showMyItems ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-300' }} transition-colors duration-200">
+                        Mis Items
+                    </a>
+                </div>
+            </div>
 
-                <form action="{{ isset($item) ? route('items.update', $item->id) : route('items.store') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    @if(isset($item))
-                        @method('PUT')
-                    @endif
-
-                    <!-- Código BCI -->
-                    <div class="mb-6">
-                        <label for="codigo_bci" class="block text-sm font-medium text-gray-300">Código BCI:</label>
-                        <input type="text" name="codigo_bci" id="codigo_bci" class="block w-full bg-gray-700 text-white border-gray-600 rounded-lg mt-2 p-3" value="{{ old('codigo_bci', $item->codigo_bci ?? '') }}" required>
-                    </div>
-
-                    <!-- Descripción -->
-                    <div class="mb-6">
-                        <label for="descripcion" class="block text-sm font-medium text-gray-300">Descripción:</label>
-                        <input type="text" name="descripcion" id="descripcion" class="block w-full bg-gray-700 text-white border-gray-600 rounded-lg mt-2 p-3" value="{{ old('descripcion', $item->descripcion ?? '') }}" required>
-                    </div>
-
-        <!-- Tipo -->
-        <div class="mb-6">
-            <label for="tipo" class="block text-sm font-medium text-gray-300">Tipo:</label>
-            <select name="tipo" id="tipo" class="block w-full bg-gray-700 text-white border-gray-600 rounded-lg mt-2 p-3">
-                <option value="unidad" {{ (old('tipo', $item->tipo ?? '') == 'unidad') ? 'selected' : '' }}>Unidad</option>
-                <option value="paquete" {{ (old('tipo', $item->tipo ?? '') == 'paquete') ? 'selected' : '' }}>Paquete</option>
-            </select>
-        </div>
-
-        <!-- Cantidad -->
-        <div class="mb-6">
-            <label for="cantidad" class="block text-sm font-medium text-gray-300">Cantidad:</label>
-            <input 
-                type="number" 
-                name="cantidad" 
-                id="cantidad" 
-                class="block w-full bg-gray-700 text-white border-gray-600 rounded-lg mt-2 p-3" 
-                value="{{ old('cantidad', $item->cantidad ?? '') }}" 
-                min="1" 
-                required>
-        </div>
-
-                    <!-- Marca -->
-                    <div class="mb-6">
-                        <label for="marca" class="block text-sm font-medium text-gray-300">Marca:</label>
-                        <input type="text" name="marca" id="marca" class="block w-full bg-gray-700 text-white border-gray-600 rounded-lg mt-2 p-3" value="{{ old('marca', $item->marca ?? '') }}">
-                    </div>
-
-                    <!-- Imagen -->
-                    <div class="mb-6">
-                        <label for="imagen" class="block text-sm font-medium text-gray-300">Imagen:</label>
-                        @if(isset($item) && $item->imagen)
-                            <!-- Mostrar la imagen actual si está editando -->
-                            <div class="mb-4">
-                                <img src="{{ asset('storage/' . $item->imagen) }}" alt="Imagen del Ítem" class="w-32 h-32 object-cover rounded-lg">
-                            </div>
-                        @endif
-                        <input type="file" name="imagen" id="imagen" class="block w-full bg-gray-700 text-white border-gray-600 rounded-lg mt-2 p-3" accept="image/*">
-                    </div>
-
-
-                    <!-- Modelo -->
-                    <div class="mb-6">
-                        <label for="modelo" class="block text-sm font-medium text-gray-300">Modelo:</label>
-                        <input type="text" name="modelo" id="modelo" class="block w-full bg-gray-700 text-white border-gray-600 rounded-lg mt-2 p-3" value="{{ old('modelo', $item->modelo ?? '') }}">
-                    </div>
-
-                    <!-- Categoría -->
-                    <div class="mb-6">
-                        <label for="id_categoria" class="block text-sm font-medium text-gray-300">Categoría:</label>
-                        <select name="id_categoria" id="id_categoria" class="block w-full bg-gray-700 text-white border-gray-600 rounded-lg mt-2 p-3">
-                        @foreach($categorias as $categoria)
-                            <option value="{{ $categoria->id }}" 
-                                {{ (old('id_categoria', $item->id_categoria ?? $categoriaPreseleccionada ?? '') == $categoria->id) ? 'selected' : '' }}>
-                                {{ $categoria->nombre_categoria }}
-                            </option>
-    @endforeach
-                    </div>
-
-                    <!-- Salón -->
-                    <div class="mb-6">
-                        <label for="id_salon" class="block text-sm font-medium text-gray-300">Salón:</label>
-                        <select name="id_salon" id="id_salon" class="block w-full bg-gray-700 text-white border-gray-600 rounded-lg mt-2 p-3">
-                            <option value="">Seleccione un salón</option>
-                            @foreach($salones as $salon)
-                                <option value="{{ $salon->id }}" {{ (old('id_salon', $item->id_salon ?? '') == $salon->id) ? 'selected' : '' }}>{{ $salon->nombre_salon }}</option>
+            <!-- Filtros -->
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+                <form action="{{ route('items.index') }}" method="GET" class="flex flex-wrap gap-4 items-end">
+                    <input type="hidden" name="view" value="{{ request('view', 'all') }}">
+                    
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Categoría</label>
+                        <select name="categoria" class="w-full bg-gray-700 border-gray-600 text-white rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">Todas las categorías</option>
+                            @foreach($categorias as $categoria)
+                                <option value="{{ $categoria->id }}" {{ $categoriaActual && $categoriaActual->id == $categoria->id ? 'selected' : '' }}>
+                                    {{ $categoria->nombre_categoria }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
 
-                    <!-- Armario (dinámico) -->
-                    <div class="mb-6" id="armario-container" style="display: none;">
-                        <label for="id_armario" class="block text-sm font-medium text-gray-300">Armario:</label>
-                        <select name="id_armario" id="id_armario" class="block w-full bg-gray-700 text-white border-gray-600 rounded-lg mt-2 p-3">
-                            <option value="">Seleccione un armario</option>
-                        </select>
-                    </div>
-
-                    @if($errors->any())
-                        <div class="bg-red-500 text-white p-4 rounded-lg mb-6">
-                            <ul>
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-
-                    <!-- Botón para enviar -->
-                    <div class="mt-8">
-                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg">
-                            {{ isset($item) ? 'Actualizar Ítem' : 'Agregar Ítem' }}
-                        </button>
-                    </div>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                        Filtrar
+                    </button>
                 </form>
+            </div>
 
-                <div class="mt-6">
-                    <a href="{{ route('items.index') }}" class="text-blue-500 hover:text-blue-700">Volver a la lista de ítems</a>
+            <!-- Lista de Items -->
+            <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-700">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Imagen</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Código BCI</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Descripción</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Categoría</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Ubicación</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-gray-800 divide-y divide-gray-700">
+                            @forelse($items as $item)
+                                <tr class="hover:bg-gray-700 transition-colors duration-200">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($item->imagen)
+                                            <img src="{{ asset('storage/' . $item->imagen) }}" alt="Imagen del ítem" class="h-12 w-12 rounded-lg object-cover">
+                                        @else
+                                            <div class="h-12 w-12 rounded-lg bg-gray-700 flex items-center justify-center">
+                                                <span class="text-gray-400">N/A</span>
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-300">{{ $item->codigo_bci }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-300">{{ $item->descripcion }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-300">{{ $item->categoria->nombre_categoria }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-300">
+                                        {{ $item->armario->salon->nombre_salon }} - {{ $item->armario->nombre_armario }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm font-medium space-x-2">
+                                        <a href="{{ route('items.show', $item->id) }}" class="text-blue-400 hover:text-blue-300">Ver</a>
+                                        @can('editar items')
+                                            <a href="{{ route('items.edit', $item->id) }}" class="text-yellow-400 hover:text-yellow-300">Editar</a>
+                                        @endcan
+                                        @can('eliminar items')
+                                            <form action="{{ route('items.destroy', $item->id) }}" method="POST" class="inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-400 hover:text-red-300" onclick="return confirm('¿Estás seguro?')">
+                                                    Eliminar
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="px-6 py-4 text-center text-gray-400">
+                                        No se encontraron items
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Script para manejar la selección de armarios -->
-    <script>
-        document.getElementById('id_salon').addEventListener('change', function () {
-            const salonId = this.value;
-            const armarioContainer = document.getElementById('armario-container');
-            const armarioSelect = document.getElementById('id_armario');
-
-            if (salonId) {
-                armarioContainer.style.display = 'block';
-                armarioSelect.innerHTML = '<option value="">Seleccione un armario</option>';
-
-                fetch(`/salones/${salonId}/armarios`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.forEach(armario => {
-                            const option = document.createElement('option');
-                            option.value = armario.id;
-                            option.textContent = armario.nombre_armario;
-                            armarioSelect.appendChild(option);
-                        });
-                    });
-            } else {
-                armarioContainer.style.display = 'none';
-            }
-        });
-
-
-        document.addEventListener('DOMContentLoaded', () => {
-        const tipoSelect = document.getElementById('tipo');
-        const cantidadInput = document.getElementById('cantidad');
-
-        // Escuchar cambios en el tipo
-        tipoSelect.addEventListener('change', () => {
-            if (tipoSelect.value === 'unidad') {
-                cantidadInput.value = 1; // Por defecto, poner 1 si es "unidad"
-            } else {
-                cantidadInput.value = ''; // Limpiar el valor si es "paquete"
-            }
-        });
-
-        // Establecer el valor por defecto al cargar la página
-        if (tipoSelect.value === 'unidad') {
-            cantidadInput.value = 1;
-        }
-    });
-    </script>
 </x-app-layout>

@@ -11,6 +11,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CategoriaController;
 
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\SearchController;
 
 use App\Models\Salon;
 use Illuminate\Support\Facades\Auth;
@@ -28,6 +29,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/salones/{id}/armarios', [SalonController::class, 'getArmariosBySalon'])->name('salones.armarios');
 
+
+    Route::get('api/search/{type}', [SearchController::class, 'search'])->name('api.search');
 
 
     

@@ -15,27 +15,47 @@ class ItemController extends Controller
     {
         $usuario = auth()->user();
         $query = Item::with('categoria', 'armario.salon');
-        
-        // Si hay una categoría seleccionada, filtramos por ella
+        $showMyItems = $request->get('view', 'all') === 'my';
+    
+        // Filtro por categoría
         $categoriaActual = null;
         if ($request->has('categoria')) {
             $query->where('id_categoria', $request->categoria);
             $categoriaActual = Categoria::findOrFail($request->categoria);
         }
     
-        // Filtrar según el rol del usuario
+        // Filtrar según el rol y la vista seleccionada
         if ($usuario->hasRole('admin')) {
             $items = $query->get();
+            $misItems = $items; // Para admins, todos los items son "sus items"
         } 
         elseif ($usuario->hasRole('asistente')) {
             $asistente = $usuario->asistente;
             $salonIds = $asistente->salones->pluck('id')->toArray();
             
-            $items = $query->whereHas('armario.salon', function ($query) use ($salonIds) {
-                $query->whereIn('id', $salonIds);
-            })->get();
+            if ($showMyItems) {
+                // Solo items de los salones asignados
+                $items = $query->whereHas('armario.salon', function ($query) use ($salonIds) {
+                    $query->whereIn('id', $salonIds);
+                })->get();
+            } else {
+                // Todos los items
+                $items = $query->get();
+            }
             
             $salones = Salon::whereIn('id', $salonIds)->get();
+        }
+        elseif ($usuario->hasRole('profesor')) {
+            if ($showMyItems) {
+                // Items del salón donde está asignado el profesor
+                $salonIds = $usuario->profesor->salones->pluck('id')->toArray();
+                $items = $query->whereHas('armario.salon', function ($query) use ($salonIds) {
+                    $query->whereIn('id', $salonIds);
+                })->get();
+            } else {
+                // Todos los items disponibles
+                $items = $query->get();
+            }
         } 
         else {
             return redirect()->back()->withErrors('No tienes permisos para ver esta página.');
@@ -44,7 +64,8 @@ class ItemController extends Controller
         return view('items.index', [
             'items' => $items,
             'categoriaActual' => $categoriaActual,
-            'salones' => $salones ?? null
+            'salones' => $salones ?? null,
+            'showMyItems' => $showMyItems
         ]);
     }
 

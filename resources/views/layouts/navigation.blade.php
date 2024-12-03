@@ -90,7 +90,7 @@
 
         @can('ver reservas')
             <x-nav-link :href="route('categorias.index')" :active="request()->routeIs('reservas.*')">
-                <x-icon name="reservas" />
+                <x-icon name="categorias" />
                 <span>{{ __('Categorias') }}</span>
             </x-nav-link>
         @endcan
@@ -240,7 +240,7 @@
 
         @can('ver categorias')
             <x-nav-link :href="route('categorias.index')" :active="request()->routeIs('usuarios.*')">
-                <x-icon name="users" />
+            <x-icon name="categorias" />
                 <span>{{ __('Categorias') }}</span>
             </x-nav-link>
         @endcan

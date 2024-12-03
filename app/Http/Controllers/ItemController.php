@@ -29,34 +29,22 @@ class ItemController extends Controller
             $items = $query->get();
             $misItems = $items; // Para admins, todos los items son "sus items"
         } 
-        elseif ($usuario->hasRole('asistente')) {
+        elseif ($usuario->hasRole(['asistente', 'profesor'])) {
             $asistente = $usuario->asistente;
-            $salonIds = $asistente->salones->pluck('id')->toArray();
             
-            if ($showMyItems) {
-                // Solo items de los salones asignados
-                $items = $query->whereHas('armario.salon', function ($query) use ($salonIds) {
-                    $query->whereIn('id', $salonIds);
-                })->get();
-            } else {
-                // Todos los items
-                $items = $query->get();
+            if ($usuario->hasRole('asistente')) {
+                $salonIds = $asistente->salones->pluck('id')->toArray();
+                $salones = Salon::whereIn('id', $salonIds)->get();
+                
+                if ($showMyItems) {
+                    $items = $query->whereHas('armario.salon', function ($query) use ($salonIds) {
+                        $query->whereIn('id', $salonIds);
+                    })->get();
+                }
             }
             
-            $salones = Salon::whereIn('id', $salonIds)->get();
+            $items = $query->get();
         }
-        elseif ($usuario->hasRole('profesor')) {
-            if ($showMyItems) {
-                // Items del salón donde está asignado el profesor
-                $salonIds = $usuario->profesor->salones->pluck('id')->toArray();
-                $items = $query->whereHas('armario.salon', function ($query) use ($salonIds) {
-                    $query->whereIn('id', $salonIds);
-                })->get();
-            } else {
-                // Todos los items disponibles
-                $items = $query->get();
-            }
-        } 
         else {
             return redirect()->back()->withErrors('No tienes permisos para ver esta página.');
         }

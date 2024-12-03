@@ -4,26 +4,20 @@
             <div class="bg-gray-800/80 backdrop-blur-lg rounded-2xl border border-gray-700/50 shadow-xl p-6">
                 
                 <!-- Vista Selector -->
-                @if(auth()->user()->hasAnyRole(['admin', 'asistente', 'profesor']))
-                <div class="mb-6">
-                    <nav class="flex space-x-4 border-b border-gray-700/50">
-                        <a href="{{ route('items.index', ['view' => 'all']) }}" 
-                           class="px-4 py-3 text-sm font-medium {{ !$showMyItems ? 'text-white border-b-2 border-green-500' : 'text-gray-400 hover:text-white' }} transition-colors duration-200">
-                            Todos los Items
-                        </a>
-                        <a href="{{ route('items.index', ['view' => 'my']) }}" 
-                           class="px-4 py-3 text-sm font-medium {{ $showMyItems ? 'text-white border-b-2 border-green-500' : 'text-gray-400 hover:text-white' }} transition-colors duration-200">
-                            @if(auth()->user()->hasRole('admin'))
-                                Mis Items
-                            @elseif(auth()->user()->hasRole('asistente'))
-                                Items de Mis Salones
-                            @else
-                                Items de Mi Salón
-                            @endif
-                        </a>
-                    </nav>
-                </div>
-                @endif
+                @if(auth()->user()->hasRole('asistente'))
+<div class="mb-6">
+   <nav class="flex space-x-4 border-b border-gray-700/50">
+       <a href="{{ route('items.index', ['view' => 'all']) }}"
+           class="px-4 py-3 text-sm font-medium {{ !$showMyItems ? 'text-white border-b-2 border-green-500' : 'text-gray-400 hover:text-white' }} transition-colors duration-200">
+           Todos los Items
+       </a>
+       <a href="{{ route('items.index', ['view' => 'my']) }}"
+           class="px-4 py-3 text-sm font-medium {{ $showMyItems ? 'text-white border-b-2 border-green-500' : 'text-gray-400 hover:text-white' }} transition-colors duration-200">
+           Items de Mis Salones
+       </a>
+   </nav>
+</div>
+@endif
 
                 <!-- Breadcrumb y Título -->
                 <div class="mb-6">

@@ -7,10 +7,11 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up()
     {
-        Schema::table('items', function (Blueprint $table) {
-            // Añadir el campo 'estado' a la tabla 'items'
-            $table->string('estado')->default('disponible')->after('cantidad');
-        });
+        if (Schema::hasTable('items') && !Schema::hasColumn('items', 'estado')) {
+            Schema::table('items', function (Blueprint $table) {
+                $table->string('estado')->default('disponible')->after('cantidad');
+            });
+         }
     }
 
     public function down()

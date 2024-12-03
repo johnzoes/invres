@@ -78,6 +78,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'ver items',
             'ver notificaciones',
             'marcar notificaciones como leídas',
+            'ver categorias',
+
         ];
         $profesor->syncPermissions($profesorPermissions);
 

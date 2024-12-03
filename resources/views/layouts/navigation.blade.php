@@ -88,7 +88,7 @@
             </x-nav-link>
         @endcan
 
-        @can('ver reservas')
+        @can('ver categorias')
             <x-nav-link :href="route('categorias.index')" :active="request()->routeIs('reservas.*')">
                 <x-icon name="categorias" />
                 <span>{{ __('Categorias') }}</span>

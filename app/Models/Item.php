@@ -45,7 +45,7 @@ class Item extends Model
             $this->estado = $this->cantidad > 0 ? 'disponible' : 'ocupado';
         } elseif ($this->tipo === 'paquete') {
             // Si es un paquete, mostrar la cantidad disponible
-            $this->estado = $this->cantidad > 0 ? "disponible: $this->cantidad" : 'ocupado';
+            $this->estado = $this->cantidad > 0 ? 'disponible' : 'ocupado';
         }
         $this->save();
     }

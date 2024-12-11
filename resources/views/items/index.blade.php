@@ -90,7 +90,7 @@
                                     <td class="py-4 px-6 text-gray-300">{{ $item->tipo }}</td>
                                     <td class="py-4 px-6 text-gray-300">{{ $item->marca }}</td>
                                     <td class="py-4 px-6 text-gray-300">
-                                        {{ $item->armario->salon->nombre ?? 'Sin ubicación' }}
+                                        {{ $item->armario->salon->nombre_salon ?? 'Sin ubicación' }}
                                     </td>
                                     <td class="py-4 px-6">
                                         @php

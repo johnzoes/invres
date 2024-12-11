@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('api/search/{type}', [SearchController::class, 'search'])->name('api.search');
 
+    Route::get('/items/armarios/{salonId}', [ItemController::class, 'getArmariosBySalon']);
 
     
 // Rutas relacionadas con el perfil del usuario autenticado
@@ -147,10 +148,6 @@ Route::middleware(['auth'])->get('/notificaciones/unread-count', function () {
         })->name('marcarLeida');
     });
 
-
-
-
-    
 
 });
 

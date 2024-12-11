@@ -48,31 +48,18 @@
     <!-- User Data -->
     <div id="user-data" data-user-id="{{ Auth::id() }}" class="hidden"></div>
 
-    <!-- Scripts de inicialización -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Inicializar Select2
-            if (jQuery().select2) {
-                $('.select2').select2({
-                    theme: 'classic',
-                    width: '100%'
-                });
-            }
 
-            // Inicializar Notyf
-            if (typeof Notyf !== 'undefined') {
-                window.notyf = new Notyf({
-                    duration: 5000,
-                    position: { x: 'right', y: 'top' },
-                    types: [
-                        { type: 'success', background: '#10B981' },
-                        { type: 'error', background: '#EF4444' }
-                    ]
-                });
-            }
-        });
-    </script>
+
+
+    
+
 
     @stack('scripts')
+
+
+
+
+
+</script>
 </body>
 </html>

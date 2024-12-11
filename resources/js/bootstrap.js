@@ -1,29 +1,39 @@
-import Echo from 'laravel-echo';
-import axios from 'axios';
+import Echo from 'laravel-echo'; 
+import Pusher from 'pusher-js';
+import { Notyf } from 'notyf';
+import 'notyf/notyf.min.css';
 
-window.axios = axios;
 
-// Configurar CSRF Token para solicitudes de Axios
-window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-
-// Inicializar Pusher y Laravel Echo
-window.Pusher = require('pusher-js');
+window.Pusher = Pusher;
+Pusher.logToConsole = true;
 
 window.Echo = new Echo({
     broadcaster: 'pusher',
-    key: import.meta.env.VITE_PUSHER_APP_KEY, // Asegúrate de que este valor esté en tu .env
-    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER, // Asegúrate de que este valor esté en tu .env
-    wsHost: import.meta.env.VITE_PUSHER_HOST ?? `ws-${import.meta.env.VITE_PUSHER_APP_CLUSTER}.pusher.com`,
-    wsPort: import.meta.env.VITE_PUSHER_PORT ?? 80,
-    wssPort: import.meta.env.VITE_PUSHER_PORT ?? 443,
-    forceTLS: (import.meta.env.VITE_PUSHER_SCHEME ?? 'https') === 'https',
-    enabledTransports: ['ws', 'wss'],
+    key: '5763113ca40d07fbd4c0',
+    cluster: 'us2',
+    forceTLS: true
 });
 
-/**
- * Echo exposes an expressive API for subscribing to channels and listening
- * for events that are broadcast by Laravel. Echo and event broadcasting
- * allow your team to quickly build robust real-time web applications.
- */
+const notyf = new Notyf({
+    position: {
+        x: 'right',
+        y: 'top', 
+    },
+    duration: 5000,
+    types: [
+        {
+            type: 'success',
+            background: '#28a745',
+        }
+    ]
+ });
 
-import './echo';
+window.Echo.connector.pusher.connection.bind('connected', () => {
+    console.log('✅ Conectado a Pusher');
+});
+
+window.Echo.channel('notifications')
+   .listen('.NotificationEvent', (data) => {
+       console.log(data); // Debug
+       notyf.success(typeof data === 'string' ? data : data.mensaje);
+   });

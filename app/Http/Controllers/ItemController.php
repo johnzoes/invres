@@ -86,14 +86,41 @@ class ItemController extends Controller
     // Mostrar el formulario de creación de un nuevo ítem
     public function create(Request $request)
     {
-        $salones = Salon::all(); 
-        $categorias = Categoria::all();
-        $armarios = Armario::all();
-        $categoriaPreseleccionada = $request->categoria ?? null;
-
-        return view('items.form', compact('categorias', 'armarios', 'salones', 'categoriaPreseleccionada'));
+        $showMyItems = $request->get('view', 'all') === 'my';
+        $categoriaPreseleccionada = null;
+        
+        // Obtener el usuario actual
+        $user = auth()->user();
+        
+        // Obtener las categorías
+        $categorias = Categoria::orderBy('nombre_categoria')->get();
+        
+        // Obtener los salones según el rol
+        if ($user->hasRole('admin')) {
+            // El admin ve todos los salones
+            $salones = Salon::orderBy('nombre_salon')->get();
+        } elseif ($user->hasRole('asistente')) {
+            // El asistente solo ve sus salones asignados
+            $salonIds = $user->asistente->salones->pluck('id');
+            $salones = Salon::whereIn('id', $salonIds)->orderBy('nombre_salon')->get();
+        } else {
+            // Para otros roles (como profesor), mostrar todos los salones
+            $salones = Salon::orderBy('nombre_salon')->get();
+        }
+        
+        // Verificar si viene de una categoría específica
+        if ($request->has('categoria')) {
+            $categoriaActual = Categoria::find($request->categoria);
+            $categoriaPreseleccionada = $categoriaActual ? $categoriaActual->id : null;
+        }
+    
+        return view('items.form', compact(
+            'categorias',
+            'salones',
+            'categoriaPreseleccionada',
+            'showMyItems'
+        ));
     }
-
 
 
    public function store(Request $request)
